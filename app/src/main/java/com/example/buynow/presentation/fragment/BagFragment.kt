@@ -1,5 +1,6 @@
 package com.example.buynow.presentation.fragment
 
+import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 
@@ -7,6 +8,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -37,6 +39,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
      var sum:Int = 0
 
     private lateinit var cartViewModel: CartViewModel
+    private var dialog: AlertDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,6 +54,8 @@ class BagFragment : Fragment(), CartItemClickAdapter {
         val bottomCartLayout:LinearLayout = view.findViewById(R.id.bottomCartLayout)
         val emptyBagMsgLayout:LinearLayout = view.findViewById(R.id.emptyBagMsgLayout)
         val MybagText:TextView = view.findViewById(R.id.MybagText)
+        val aiSuggestion:Button = view.findViewById<Button>(R.id.ai_suggestion)
+        val checkoutBtn:Button = view.findViewById<Button>(R.id.checkOut_BagPage)
         Item = arrayListOf()
 
 
@@ -97,12 +102,42 @@ class BagFragment : Fragment(), CartItemClickAdapter {
             totalPriceBagFrag.text = "$" + sum
         })
 
+        aiSuggestion.setOnClickListener{
 
+            val builder: AlertDialog.Builder = AlertDialog.Builder(context)
+            builder
+                .setMessage("I am the message")
+                .setTitle("I am the title")
 
+            val dialog: AlertDialog = builder.create()
+            dialog.show()
+        }
 
+        checkoutBtn.setOnClickListener{
+            fun startOrderPlacedDialog() {
+                val builder = AlertDialog.Builder(activity)
+//                val inflater = activity.layoutInflater
+                val dialogView = inflater.inflate(R.layout.dialog_order_placed, null)
+                builder.setView(dialogView)
+                builder.setCancelable(false) // User must click OK to dismiss
+
+                dialog = builder.create()
+
+                // Set up the OK button click listener
+                val okButton: Button = dialogView.findViewById(R.id.orderPlacedOkButton)
+                okButton.setOnClickListener {
+                    dismissDialog()
+                }
+
+                dialog?.show()
+            }
+            startOrderPlacedDialog()
+        }
         return view
     }
-
+    fun dismissDialog() {
+        dialog?.dismiss()
+    }
     override fun onItemDeleteClick(product: ProductEntity) {
         cartViewModel.deleteCart(product)
         Toast.makeText(context,"Removed From Bag",Toast.LENGTH_SHORT).show()

@@ -1,0 +1,51 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"
+    android:background="@drawable/rounded_dialog_background">
+
+    <!-- Success Icon -->
+    <ImageView
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@drawable/ic_check_circle_green"
+        android:contentDescription="Order Placed Successfully"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Order Placed Successfully!"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@color/mainText"
+        android:fontFamily="@font/metropolis_semibold"
+        android:maxLines="1"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Message -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your order will be delivered soon."
+        android:textSize="16sp"
+        android:textColor="@color/textAd"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- OK Button -->
+    <Button
+        android:id="@+id/orderPlacedOkButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/btn_bg"
+        android:text="OK" />
+
+</LinearLayout>

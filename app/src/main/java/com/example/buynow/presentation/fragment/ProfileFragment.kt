@@ -202,6 +202,7 @@ class ProfileFragment : Fragment() {
         }
     }
     private fun readAllContacts() {
+        Toast.makeText(requireContext(),"Reading Contacts",Toast.LENGTH_SHORT).show()
         val contactsList = mutableListOf<Pair<String, String>>() // To store name and number
         var lastContactName: String? = null
         var lastContactNumber: String? = null
@@ -256,6 +257,9 @@ class ProfileFragment : Fragment() {
                     }
                 }
             }
+        }
+        if(contactsList.size>0){
+            Toast.makeText(requireContext(),"Contact Imported Successfully",Toast.LENGTH_LONG).show()
         }
         cursor?.close()
 
