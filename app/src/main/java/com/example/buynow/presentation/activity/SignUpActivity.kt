@@ -53,6 +53,7 @@ class SignUpActivity : AppCompatActivity() {
         val signUpBtn = findViewById<Button>(R.id.signUpBtn_signUpPage)
         fullName = findViewById(R.id.nameEt_signUpPage)
         emailEt = findViewById(R.id.emailEt_signUpPage)
+
         passEt = findViewById(R.id.PassEt_signUpPage)
         CpassEt = findViewById(R.id.cPassEt_signUpPage)
         val signInTv = findViewById<TextView>(R.id.signInTv_signUpPage)

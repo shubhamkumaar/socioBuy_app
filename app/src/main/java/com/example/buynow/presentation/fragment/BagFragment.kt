@@ -54,7 +54,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
         val bottomCartLayout:LinearLayout = view.findViewById(R.id.bottomCartLayout)
         val emptyBagMsgLayout:LinearLayout = view.findViewById(R.id.emptyBagMsgLayout)
         val MybagText:TextView = view.findViewById(R.id.MybagText)
-        val aiSuggestion:Button = view.findViewById<Button>(R.id.ai_suggestion)
+        val aiSuggestion:Button = view.findViewById<Button>(R.id.ai_suggestion_button)
         val checkoutBtn:Button = view.findViewById<Button>(R.id.checkOut_BagPage)
         Item = arrayListOf()
 
@@ -86,12 +86,14 @@ class BagFragment : Fragment(), CartItemClickAdapter {
                 animationView.loop(true)
                 bottomCartLayout.visibility = View.GONE
                 MybagText.visibility = View.GONE
+                aiSuggestion.visibility=View.GONE
                 emptyBagMsgLayout.visibility = View.VISIBLE
 
             }
             else{
                 emptyBagMsgLayout.visibility = View.GONE
                 bottomCartLayout.visibility = View.VISIBLE
+                aiSuggestion.visibility=View.VISIBLE
                 MybagText.visibility = View.VISIBLE
                 animationView.pauseAnimation()
             }
@@ -106,8 +108,8 @@ class BagFragment : Fragment(), CartItemClickAdapter {
 
             val builder: AlertDialog.Builder = AlertDialog.Builder(context)
             builder
-                .setMessage("I am the message")
-                .setTitle("I am the title")
+                .setMessage("Recommend by friend")
+                .setTitle("AI Suggestion")
 
             val dialog: AlertDialog = builder.create()
             dialog.show()
