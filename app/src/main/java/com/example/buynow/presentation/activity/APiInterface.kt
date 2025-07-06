@@ -11,6 +11,6 @@ interface ApiInterface {
     suspend fun loginUser(@Body request: LoginRequest): LoginData
 
     @POST("/register")
-    suspend fun signupUser(@Body request: SignUpRequest): SignupData
+    suspend fun register(@Body request: SignUpRequest): LoginData
 }
 

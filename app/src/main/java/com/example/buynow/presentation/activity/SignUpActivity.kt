@@ -2,46 +2,42 @@ package com.example.buynow.presentation.activity
 
 
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 
 import androidx.core.content.ContextCompat
 import com.example.buynow.R
+import com.example.buynow.data.model.LoginData
 import com.example.buynow.data.model.User
-
+import com.example.buynow.data.model.SignUpRequest
 import com.example.buynow.utils.Extensions.toast
 
-import com.google.firebase.auth.FirebaseAuth
-
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 
 
 class SignUpActivity : AppCompatActivity() {
-
+    private val TAG = "SignupActivity"
 
     private lateinit var fullName: EditText
     private lateinit var emailEt: EditText
-    private lateinit var phone:EditText
+    private lateinit var phoneIn:EditText
     private lateinit var passEt: EditText
     private lateinit var CpassEt: EditText
-
-    private val userCollectionRef = Firebase.firestore.collection("Users")
-    val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 
     lateinit var progressDialog:ProgressDialog
 
@@ -54,7 +50,7 @@ class SignUpActivity : AppCompatActivity() {
         val signUpBtn = findViewById<Button>(R.id.signUpBtn_signUpPage)
         fullName = findViewById(R.id.nameEt_signUpPage)
         emailEt = findViewById(R.id.emailEt_signUpPage)
-        phone = findViewById(R.id.phone_signUpPage)
+        phoneIn = findViewById(R.id.phone_signUpPage)
         passEt = findViewById(R.id.PassEt_signUpPage)
         CpassEt = findViewById(R.id.cPassEt_signUpPage)
         val signInTv = findViewById<TextView>(R.id.signInTv_signUpPage)
@@ -239,45 +235,76 @@ class SignUpActivity : AppCompatActivity() {
 
         val emailV: String = emailEt.text.toString()
         val passV: String = passEt.text.toString()
+        val phone:String = phoneIn.text.toString().trim()
         val fullname : String = fullName.text.toString()
-            /*create a user*/
-        firebaseAuth.createUserWithEmailAndPassword(emailV,passV)
 
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        progressDialog.setMessage("Save User Data")
+        CoroutineScope(Dispatchers.IO).launch{
+            try{
+                val response :LoginData = RetrofitInstance.apiInterface.register(
+                    SignUpRequest(
+                         fullname,emailV,phone, passV
+                    )
+                )
+                withContext(Dispatchers.Main) {
+                    progressDialog.dismiss()
+                    if (response.success) {
+                        Toast.makeText(applicationContext, response.message, Toast.LENGTH_SHORT)
+                            .show()
+                        response.token?.let { token ->
+                            val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                            with(sharedPref.edit()) {
+                                putString("auth_token", token)
+                                putString("user_email",response.email)
+                                putString("user_name",response.name)
+                                putString("user_phone",response.phone)
+                                putLong(
+                                    "auth_token_timestamp",
+                                    System.currentTimeMillis()
+                                )
+                                apply() // Apply changes asynchronously
+                            }
+                            Log.d(TAG, "signInUser: Token stored successfully: $token")
+                            Log.d(TAG, "signInUser: Timestamp stored: ${System.currentTimeMillis()}")
+                            Toast.makeText(applicationContext, "Token stored!", Toast.LENGTH_SHORT).show()
+                        }
 
-
-                        val user = User(fullname,"",firebaseAuth.uid.toString(),emailV,"","")
-
-                        storeUserData(user)
-
-                        val intent = Intent(this, HomeActivity::class.java)
-                        startActivity(intent)
+                        startActivity(Intent(this@SignUpActivity, HomeActivity::class.java))
                         finish()
                     } else {
-                        progressDialog.dismiss()
-                        toast("failed to Authenticate !")
+                        Toast.makeText(applicationContext, response.message, Toast.LENGTH_LONG)
+                            .show()
                     }
                 }
 
-    }
-
-    private fun storeUserData(user: User) = CoroutineScope(Dispatchers.IO).launch {
-        try {
-
-            userCollectionRef.document(firebaseAuth.uid.toString()).set(user).await()
-            withContext(Dispatchers.Main){
-                toast("Data Saved")
-                progressDialog.dismiss()
-            }
-
-        }catch (e:Exception){
-            withContext(Dispatchers.Main){
-                toast(""+ e.message.toString())
-                progressDialog.dismiss()
-            }
+            }catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    progressDialog.dismiss() // Dismiss dialog on error
+                    Toast.makeText(
+                        applicationContext, "Error: ${e.localizedMessage}", Toast.LENGTH_LONG
+                    ).show()
+                    e.printStackTrace() // Log the error for debugging
+                }
         }
+//        firebaseAuth.createUserWithEmailAndPassword(emailV,passV)
+//
+//                .addOnCompleteListener { task ->
+//                    if (task.isSuccessful) {
+//                        progressDialog.setMessage("Save User Data")
+//
+//
+//                        val user = User(fullname,"",firebaseAuth.uid.toString(),emailV,"","")
+//
+//                        storeUserData(user)
+//
+//                        val intent = Intent(this, HomeActivity::class.java)
+//                        startActivity(intent)
+//                        finish()
+//                    } else {
+//                        progressDialog.dismiss()
+//                        toast("failed to Authenticate !")
+//                    }
+//                }
+
     }
 
 //    private fun sendEmailVerification() {
@@ -298,7 +325,7 @@ class SignUpActivity : AppCompatActivity() {
 //                    toast("Verification Link Send failed")
 //                }
 //        }
-//    }
+    }
 
 
 }
