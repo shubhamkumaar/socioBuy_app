@@ -25,6 +25,20 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.IOException
+import android.app.AlertDialog
+import com.example.buynow.data.model.User
+import com.example.buynow.data.model.PurchaseDisplay
+import android.graphics.Color
+import android.view.Gravity
+// For animation interpolator
+import android.view.animation.AccelerateDecelerateInterpolator
+
+// For bold text (Typeface)
+import android.graphics.Typeface
+
+// For image transition using Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+
 
 class ProductDetailsActivity : AppCompatActivity() {
 
@@ -109,6 +123,7 @@ class ProductDetailsActivity : AppCompatActivity() {
         backIv_ProfileFrag.setOnClickListener {
             onBackPressed()
         }
+        loadRecentlyBoughtContacts()
 
         addToCart_ProductDetailsPage.setOnClickListener {
 
@@ -147,9 +162,127 @@ class ProductDetailsActivity : AppCompatActivity() {
 
             bottomSheetDialod.setContentView(bottomSheetView)
             bottomSheetDialod.show()
+
         }
 
     }
+
+    private fun loadRecentlyBoughtContacts() {
+        val recentBuyers = listOf(
+            PurchaseDisplay(User("Priya Sharma", "https://randomuser.me/api/portraits/women/1.jpg"), "Red Dress", "2 hours ago"),
+            PurchaseDisplay(User("Amit Singh", "https://randomuser.me/api/portraits/men/2.jpg"), "Leather Wallet", "5 hours ago"),
+            PurchaseDisplay(User("Nikita Rao", "https://randomuser.me/api/portraits/women/3.jpg"), "Sunglasses", "1 day ago"),
+            PurchaseDisplay(User("Raj Mehta", "https://randomuser.me/api/portraits/men/4.jpg"), "Sneakers", "2 days ago"),
+            PurchaseDisplay(User("Ishita Verma", "https://randomuser.me/api/portraits/women/5.jpg"), "Wrist Watch", "3 days ago")
+        )
+
+        val container = findViewById<LinearLayout>(R.id.recentBuyersContainer)
+        container.removeAllViews()
+
+        val inflater = LayoutInflater.from(this)
+        val rowLayout = inflater.inflate(R.layout.item_recent_buyers_row, container, false) as LinearLayout
+
+        val avatarSize = 110
+        val overlapMargin = -45
+
+        recentBuyers.forEach { purchase ->
+            val imageView = ImageView(this)
+            val params = LinearLayout.LayoutParams(avatarSize, avatarSize)
+            params.setMargins(0, 0, overlapMargin, 0)
+            imageView.layoutParams = params
+            imageView.scaleType = ImageView.ScaleType.CENTER_CROP
+            imageView.setPadding(4, 4, 4, 4)
+            imageView.setBackgroundResource(R.drawable.avatar_border)
+            imageView.elevation = 6f
+
+            Glide.with(this)
+                .load(purchase.user.userImage)
+                .placeholder(R.drawable.placeholder_avatar)
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .circleCrop()
+                .into(imageView)
+
+            rowLayout.addView(imageView)
+        }
+
+        // ➕ Add final plus sign overlapping last avatar
+        val plusView = TextView(this)
+        val plusParams = LinearLayout.LayoutParams(avatarSize, avatarSize)
+        plusParams.setMargins(0, 0, 0, 0)
+        plusView.layoutParams = plusParams
+        plusView.text = "+"
+        plusView.textSize = 22f
+        plusView.setTextColor(Color.WHITE)
+        plusView.setBackgroundColor(Color.TRANSPARENT)
+        plusView.gravity = Gravity.CENTER
+        plusView.elevation = 6f
+        plusView.setTypeface(null, Typeface.BOLD)
+
+        rowLayout.addView(plusView)
+        rowLayout.alpha = 0f
+        rowLayout.translationY = 50f
+
+        rowLayout.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(600)
+            .setInterpolator(AccelerateDecelerateInterpolator())
+            .start()
+        container.addView(rowLayout)
+
+        // 🟦 Click handler to show dialog
+        val section = findViewById<View>(R.id.recentlyBoughtSection)
+        val showDialog = { showBuyerDialog(recentBuyers) }
+        section.setOnClickListener { showDialog() }
+        container.setOnClickListener { showDialog() }
+    }
+
+
+
+
+    private fun showBuyerDialog(recentBuyers: List<PurchaseDisplay>) {
+        val dialog = AlertDialog.Builder(this).create()
+        val view = layoutInflater.inflate(R.layout.dialog_recent_buyers, null)
+        val closeIcon = view.findViewById<ImageView>(R.id.closeIcon)
+        val container = view.findViewById<LinearLayout>(R.id.buyerDialogList)
+
+        recentBuyers.forEach { buyer ->
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(32, 24, 32, 24)
+                val params = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                params.setMargins(0, 0, 0, 20)
+                layoutParams = params
+                setBackgroundResource(R.drawable.buyer_row_bg)
+            }
+
+            val text = TextView(this).apply {
+                text = "👤 ${buyer.user.userName}   •   🕒 ${buyer.timeAgo}"
+                textSize = 16f
+                setTextColor(resources.getColor(android.R.color.white))
+                typeface = resources.getFont(R.font.metropolis_regular)
+            }
+
+            row.addView(text)
+            container.addView(row)
+        }
+
+        closeIcon.setOnClickListener { dialog.dismiss() }
+
+        dialog.setView(view)
+        dialog.setCancelable(false)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
+    }
+
+
+
+
+
+
 
     private fun addProductToBag() {
 

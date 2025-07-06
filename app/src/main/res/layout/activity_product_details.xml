@@ -107,11 +107,11 @@
                 </LinearLayout>
 
                 <TextView
-                    android:layout_marginTop="10dp"
                     android:id="@+id/productBrand_ProductDetailsPage"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginLeft="10dp"
+                    android:layout_marginTop="10dp"
                     android:layout_marginRight="10dp"
                     android:fontFamily="@font/metropolis_regular"
                     android:text=""
@@ -130,6 +130,50 @@
                     android:scaleY=".5"
                     android:transformPivotX="0dp"
                     android:transformPivotY="15dp" />
+
+<!--                Recently Buyed-->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/recentlyBoughtSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginRight="16dp"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="10dp"
+                    app:cardBackgroundColor="@color/card_dark"> <!-- Optional custom color -->
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/recentBoughtTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:fontFamily="@font/metropolis_semibold"
+                            android:text="Recently Bought by Contacts"
+                            android:textColor="@color/white"
+                            android:textSize="17sp" />
+
+                        <HorizontalScrollView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:scrollbars="none">
+
+                            <LinearLayout
+                                android:id="@+id/recentBuyersContainer"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal" />
+                        </HorizontalScrollView>
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
 
                 <TextView
                     android:layout_width="match_parent"
