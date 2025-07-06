@@ -36,6 +36,7 @@ class SignUpActivity : AppCompatActivity() {
 
     private lateinit var fullName: EditText
     private lateinit var emailEt: EditText
+    private lateinit var phone:EditText
     private lateinit var passEt: EditText
     private lateinit var CpassEt: EditText
 
@@ -53,7 +54,7 @@ class SignUpActivity : AppCompatActivity() {
         val signUpBtn = findViewById<Button>(R.id.signUpBtn_signUpPage)
         fullName = findViewById(R.id.nameEt_signUpPage)
         emailEt = findViewById(R.id.emailEt_signUpPage)
-
+        phone = findViewById(R.id.phone_signUpPage)
         passEt = findViewById(R.id.PassEt_signUpPage)
         CpassEt = findViewById(R.id.cPassEt_signUpPage)
         val signInTv = findViewById<TextView>(R.id.signInTv_signUpPage)
