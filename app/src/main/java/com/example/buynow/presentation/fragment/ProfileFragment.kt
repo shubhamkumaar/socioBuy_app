@@ -21,6 +21,7 @@ import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
 import com.example.buynow.R
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.widget.Button
 import android.widget.TextView
@@ -287,31 +288,40 @@ class ProfileFragment : Fragment() {
 
     private fun getUserData() = CoroutineScope(Dispatchers.IO).launch {
         try {
+            val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
 
-             val querySnapshot = userCollectionRef
-                 .document(firebaseAuth.uid.toString())
-                 .get().await()
+            // Retrieve user data from SharedPreferences
+            val userName: String? = sharedPref.getString("user_name", "N/A") // Default to "N/A" if not found
+            val userEmail: String? = sharedPref.getString("user_email", "N/A") // Default to "N/A" if not found
+            val userPhone: String? = sharedPref.getString("user_phone", "N/A") // Default to "N/A" if not found
+            val userImage: String? = sharedPref.getString("image_url", null) // Assuming you'd store image URL if available
 
-            val userImage:String = querySnapshot.data?.get("userImage").toString()
-            val userName:String = querySnapshot.data?.get("userName").toString()
-            val userEmail:String = querySnapshot.data?.get("userEmail").toString()
+            Log.d(TAG, "getUserData: Retrieved Name: $userName, Email: $userEmail, Phone: $userPhone")
 
-
-            withContext(Dispatchers.Main){
-
+            withContext(Dispatchers.Main) {
                 profileName_profileFrag.text = userName
                 profileEmail_profileFrag.text = userEmail
-                Glide.with(this@ProfileFragment)
-                    .load(userImage)
-                    .placeholder(R.drawable.ic_profile)
-                    .into(profileImage_profileFrag)
+                // profilePhone_profileFrag.text = userPhone // Uncomment if you have a TextView for phone
 
-                showLayout()
+                // Load image using Glide
+                if (!userImage.isNullOrEmpty()) {
+                    Glide.with(this@ProfileFragment)
+                        .load(userImage)
+                        .placeholder(R.drawable.ic_profile) // Placeholder while loading
+                        .error(R.drawable.ic_profile) // Image to show if loading fails
+                        .into(profileImage_profileFrag)
+                } else {
+                    // If no image URL, set a default placeholder
+                    profileImage_profileFrag.setImageResource(R.drawable.ic_profile)
+                }
+
+                showLayout() // Call your showLayout function if it exists
             }
-
-
-        }catch (e:Exception){
-
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                Log.e(TAG, "Error retrieving user data from SharedPreferences", e)
+                Toast.makeText(requireContext(), "Error loading profile: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+            }
         }
     }
 
