@@ -250,7 +250,7 @@ class SignUpActivity : AppCompatActivity() {
                     if (response.success) {
                         Toast.makeText(applicationContext, response.message, Toast.LENGTH_SHORT)
                             .show()
-                        response.token?.let { token ->
+                        response.accessToken?.let { token ->
                             val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
                             with(sharedPref.edit()) {
                                 putString("auth_token", token)

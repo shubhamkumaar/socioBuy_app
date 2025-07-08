@@ -23,6 +23,7 @@ import com.example.buynow.R
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.http.HttpException
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -30,7 +31,9 @@ import android.widget.Toast
 
 import com.example.buynow.utils.FirebaseUtils.storageReference
 import com.example.buynow.data.local.room.Card.CardViewModel
+import com.example.buynow.data.model.ImportContactResponse
 import com.example.buynow.presentation.activity.PaymentMethodActivity
+import com.example.buynow.presentation.activity.RetrofitInstance
 import com.example.buynow.presentation.activity.SettingsActivity
 import com.example.buynow.presentation.activity.ShipingAddressActivity
 import com.google.android.gms.tasks.Continuation
@@ -41,6 +44,9 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
 import com.google.firebase.storage.UploadTask
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +57,10 @@ import java.io.IOException
 import java.util.*
 
 
-
+data class Contact(val name: String, val number: String)
+data class ImportContactRequest(
+    val contacts: List<Contact> // The key 'contacts' matches your backend's Pydantic model
+)
 class ProfileFragment : Fragment() {
     private val TAG = "ProfileFragment"
     lateinit var animationView: LottieAnimationView
@@ -78,8 +87,6 @@ class ProfileFragment : Fragment() {
 
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var pickContactLauncher: ActivityResultLauncher<Intent>
-
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -259,10 +266,68 @@ class ProfileFragment : Fragment() {
                 }
             }
         }
+        cursor?.close()
         if(contactsList.size>0){
             Toast.makeText(requireContext(),"Contact Imported Successfully",Toast.LENGTH_LONG).show()
+
+            val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            val token:String? = sharedPref.getString("auth_token","N/A")
+            if(token == "N/A" || token == null){
+                Toast.makeText(requireContext(),"Error Uploading Contacts",Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val contactObjects = contactsList.map { pair ->
+                        Contact(name = pair.first, number = pair.second)
+                    }
+
+                    // Step 2: Create the ImportContactRequest object
+                    // This is the OBJECT that Retrofit expects for the @Body
+                    val importRequest = ImportContactRequest(contacts = contactObjects)
+
+                    val authHeader = "Bearer $token"
+                    // Make the API call
+                    val response: ImportContactResponse = RetrofitInstance.apiInterface.importContact(
+                        authToken = authHeader,
+                        request = importRequest // <--- Pass the OBJECT here, not a String
+                    )
+
+                    withContext(Dispatchers.Main) {
+                        println(response.toString())
+                        println("Contacts import successful! Message: ${response.message}")
+                        // importContactsResult.postValue("Contacts imported successfully: ${response.message}")
+                        Toast.makeText(requireContext(), "Contacts imported: ${response.message}", Toast.LENGTH_SHORT).show()
+                    }
+
+                } catch (e: retrofit2.HttpException) {
+                    // Handle HTTP errors (non-2xx responses, like 400, 401, 404, 500)
+                    val errorBody = e.response()?.errorBody()?.string()
+                    val errorCode = e.code()
+                    withContext(Dispatchers.Main) {
+                        println("Contacts import failed (HTTP $errorCode): $errorBody")
+                        // importContactsResult.postValue("Contacts import failed (HTTP $errorCode): $errorBody")
+                        Toast.makeText(requireContext(), "Import failed ($errorCode): ${errorBody ?: e.message()}", Toast.LENGTH_LONG).show()
+                    }
+                } catch (e: IOException) {
+                    // Handle network-related errors (no internet, timeout, etc.)
+                    withContext(Dispatchers.Main) {
+                        println("Network Error (Import Contacts): ${e.message}")
+                        // importContactsResult.postValue("Network error: ${e.message}")
+                        Toast.makeText(requireContext(), "Network error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                    }
+                } catch (e: Exception) {
+                    // Handle any other unexpected errors
+                    withContext(Dispatchers.Main) {
+                        println("An unexpected error occurred (Import Contacts): ${e.message}")
+                        // importContactsResult.postValue("An unexpected error occurred.")
+                        Toast.makeText(requireContext(), "An unexpected error occurred: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+
         }
-        cursor?.close()
 
     }
     private fun launchContactPicker() {
@@ -288,6 +353,7 @@ class ProfileFragment : Fragment() {
 
     private fun getUserData() = CoroutineScope(Dispatchers.IO).launch {
         try {
+
             val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
 
             // Retrieve user data from SharedPreferences
@@ -335,6 +401,7 @@ class ProfileFragment : Fragment() {
     private fun uploadImage(){
 
         if(filePath != null){
+
             val ref = storageReference.child("profile_Image/" + UUID.randomUUID().toString())
             val uploadTask = ref?.putFile(filePath!!)
 

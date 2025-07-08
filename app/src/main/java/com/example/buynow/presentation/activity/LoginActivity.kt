@@ -1,6 +1,5 @@
 package com.example.buynow.presentation.activity
 
-
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -24,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
+import kotlin.math.log
 
 class LoginActivity : AppCompatActivity() {
 
@@ -40,7 +40,6 @@ class LoginActivity : AppCompatActivity() {
     private val TAG = "LoginActivity"
 
     private val TOKEN_EXPIRATION_MILLIS = TimeUnit.MINUTES.toMillis(60)
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,11 +111,9 @@ class LoginActivity : AppCompatActivity() {
             checkInput()
         }
 
-
     }
 
     private fun textAutoCheck() {
-
 
         emailEt.addTextChangedListener(object : TextWatcher {
 
@@ -193,7 +190,6 @@ class LoginActivity : AppCompatActivity() {
             }
         })
 
-
     }
 
     private fun checkInput() {
@@ -221,7 +217,6 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-
     private fun signInUser() {
 
         loadingDialog.startLoadingDialog()
@@ -232,23 +227,21 @@ class LoginActivity : AppCompatActivity() {
             try {
                 // Make the API call using RetrofitInstance and ApiInterface
                 val response: LoginData = RetrofitInstance.apiInterface.loginUser(
-                    LoginRequest(
-                        signInEmail, signInPassword
-                    )
+                    username = signInEmail, password = signInPassword
                 )
-
+                Log.d(TAG, response.toString())
                 withContext(Dispatchers.Main) {
                     loadingDialog.dismissDialog()
                     if (response.success) {
                         Toast.makeText(applicationContext, response.message, Toast.LENGTH_SHORT)
                             .show()
-                        response.token?.let { token ->
+                        response.accessToken?.let { token ->
                             val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
                             with(sharedPref.edit()) {
                                 putString("auth_token", token)
-                                putString("user_email",response.email)
-                                putString("user_name",response.name)
-                                putString("user_phone",response.phone)
+                                putString("user_email", response.email)
+                                putString("user_name", response.name)
+                                putString("user_phone", response.phone)
                                 putLong(
                                     "auth_token_timestamp",
                                     System.currentTimeMillis()
@@ -256,8 +249,12 @@ class LoginActivity : AppCompatActivity() {
                                 apply() // Apply changes asynchronously
                             }
                             Log.d(TAG, "signInUser: Token stored successfully: $token")
-                            Log.d(TAG, "signInUser: Timestamp stored: ${System.currentTimeMillis()}")
-                            Toast.makeText(applicationContext, "Token stored!", Toast.LENGTH_SHORT).show()
+                            Log.d(
+                                TAG,
+                                "signInUser: Timestamp stored: ${System.currentTimeMillis()}"
+                            )
+                            Toast.makeText(applicationContext, "Token stored!", Toast.LENGTH_SHORT)
+                                .show()
                         }
 
                         startActivity(Intent(this@LoginActivity, HomeActivity::class.java))
