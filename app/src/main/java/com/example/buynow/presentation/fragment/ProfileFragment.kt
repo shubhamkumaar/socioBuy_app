@@ -261,15 +261,12 @@ class ProfileFragment : Fragment() {
                         contactsList.add(Pair(contactName, phoneNumber?.toString()) as Pair<String, String>)
                         lastContactName = contactName
                         lastContactNumber = phoneNumber
-                        Log.d(TAG, "Imported: $contactName ($phoneNumber)")
                     }
                 }
             }
         }
         cursor?.close()
         if(contactsList.size>0){
-            Toast.makeText(requireContext(),"Contact Imported Successfully",Toast.LENGTH_LONG).show()
-
             val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
             val token:String? = sharedPref.getString("auth_token","N/A")
             if(token == "N/A" || token == null){
@@ -283,52 +280,36 @@ class ProfileFragment : Fragment() {
                         Contact(name = pair.first, number = pair.second)
                     }
 
-                    // Step 2: Create the ImportContactRequest object
-                    // This is the OBJECT that Retrofit expects for the @Body
                     val importRequest = ImportContactRequest(contacts = contactObjects)
 
                     val authHeader = "Bearer $token"
                     // Make the API call
                     val response: ImportContactResponse = RetrofitInstance.apiInterface.importContact(
                         authToken = authHeader,
-                        request = importRequest // <--- Pass the OBJECT here, not a String
+                        request = importRequest
                     )
 
                     withContext(Dispatchers.Main) {
-                        println(response.toString())
-                        println("Contacts import successful! Message: ${response.message}")
-                        // importContactsResult.postValue("Contacts imported successfully: ${response.message}")
                         Toast.makeText(requireContext(), "Contacts imported: ${response.message}", Toast.LENGTH_SHORT).show()
                     }
 
                 } catch (e: retrofit2.HttpException) {
-                    // Handle HTTP errors (non-2xx responses, like 400, 401, 404, 500)
                     val errorBody = e.response()?.errorBody()?.string()
                     val errorCode = e.code()
                     withContext(Dispatchers.Main) {
-                        println("Contacts import failed (HTTP $errorCode): $errorBody")
-                        // importContactsResult.postValue("Contacts import failed (HTTP $errorCode): $errorBody")
                         Toast.makeText(requireContext(), "Import failed ($errorCode): ${errorBody ?: e.message()}", Toast.LENGTH_LONG).show()
                     }
                 } catch (e: IOException) {
-                    // Handle network-related errors (no internet, timeout, etc.)
                     withContext(Dispatchers.Main) {
-                        println("Network Error (Import Contacts): ${e.message}")
-                        // importContactsResult.postValue("Network error: ${e.message}")
                         Toast.makeText(requireContext(), "Network error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                     }
                 } catch (e: Exception) {
-                    // Handle any other unexpected errors
                     withContext(Dispatchers.Main) {
-                        println("An unexpected error occurred (Import Contacts): ${e.message}")
-                        // importContactsResult.postValue("An unexpected error occurred.")
                         Toast.makeText(requireContext(), "An unexpected error occurred: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                     }
                 }
             }
-
         }
-
     }
     private fun launchContactPicker() {
         val intent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)

@@ -25,7 +25,7 @@ interface ApiInterface {
     @POST("/register")
     suspend fun register(@Body request: SignUpRequest): LoginData
 
-    @POST("/import_contacts") // Use /import_contacts as per your backend
+    @POST("/users/import_contacts") // Use /import_contacts as per your backend
     suspend fun importContact(
         @Header("Authorization") authToken: String,
         @Body request: ImportContactRequest // <--- This is correct
