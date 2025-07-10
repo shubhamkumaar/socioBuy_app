@@ -1,84 +1,54 @@
 package com.example.buynow.presentation.adapter
 
-
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.buynow.R
 import com.example.buynow.data.model.Product
 import com.example.buynow.presentation.activity.ProductDetailsActivity
-import com.example.buynow.R
-import com.example.buynow.R.drawable.*
 
-class ProductAdapter(private val productList: ArrayList<Product>, context: Context): RecyclerView.Adapter<ProductAdapter.ViewHolder>()  {
+class ProductAdapter(private val products: List<Product>, private val context: Context) :
 
-    val ctx: Context = context
+    RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-
-        val productView = LayoutInflater.from(parent.context).inflate(R.layout.single_product,parent,false)
-        return ViewHolder(productView)
+    inner class ProductViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val productImage: ImageView = itemView.findViewById(R.id.productImage_singleProduct)
+        val productName: TextView = itemView.findViewById(R.id.productName_singleProduct)
+        val productPrice: TextView = itemView.findViewById(R.id.productPrice_singleProduct)
+        val productContainer: LinearLayout = itemView.findViewById(R.id.productContainer_single)
     }
 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.single_product, parent, false)
+        return ProductViewHolder(view)
+    }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun getItemCount(): Int = products.size
 
-        val product: Product = productList[position]
-        holder.productBrandName_singleProduct.text = product.productBrand
-        holder.productName_singleProduct.text = product.productName
-        holder.productPrice_singleProduct.text = "$"+product.productPrice
-        holder.productRating_singleProduct.rating = product.productRating
+    override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
+        var TAG = "ADAPTER"
+        val product = products[position]
+        Log.d(TAG,product.productName)
+        holder.productName.text = product.productName
+        holder.productPrice.text = "₹${product.productPrice}"
 
-        Glide.with(ctx)
+        Glide.with(context)
             .load(product.productImage)
-            .placeholder(bn)
-            .into(holder.productImage_singleProduct)
+            //.placeholder(R.drawable)
+            .into(holder.productImage)
 
-
-        if(product.productHave == true){
-            holder.discountTv_singleProduct.text = product.productDisCount
-            holder.discount_singleProduct.visibility = View.VISIBLE
+        holder.productContainer.setOnClickListener {
+            val intent = Intent(context, ProductDetailsActivity::class.java)
+            intent.putExtra("ProductIndex", position)
+            intent.putExtra("ProductFrom", "Category")
+            context.startActivity(intent)
         }
-
-        if(product.productHave == false){
-
-            holder.discount_singleProduct.visibility = View.VISIBLE
-            holder.discountTv_singleProduct.text = "New"
-
-        }
-
-        holder.itemView.setOnClickListener {
-            goDetailsPage(position)
-        }
-
-    }
-
-    override fun getItemCount(): Int {
-         return productList.size
-    }
-
-    class ViewHolder(itemView: View):RecyclerView.ViewHolder(itemView){
-
-        val productImage_singleProduct:ImageView = itemView.findViewById(R.id.productImage_singleProduct)
-        val productAddToFav_singleProduct:ImageView = itemView.findViewById(R.id.productAddToFav_singleProduct)
-        val productRating_singleProduct:RatingBar = itemView.findViewById(R.id.productRating_singleProduct)
-        val productBrandName_singleProduct:TextView = itemView.findViewById(R.id.productBrandName_singleProduct)
-        val discountTv_singleProduct:TextView = itemView.findViewById(R.id.discountTv_singleProduct)
-        val productName_singleProduct:TextView = itemView.findViewById(R.id.productName_singleProduct)
-        val productPrice_singleProduct:TextView = itemView.findViewById(R.id.productPrice_singleProduct)
-        val discount_singleProduct = itemView.findViewById<LinearLayout>(R.id.discount_singleProduct)
-
-
-    }
-
-    private fun goDetailsPage(position: Int) {
-        val intent = Intent(ctx , ProductDetailsActivity::class.java)
-        intent.putExtra("ProductIndex", position)
-        intent.putExtra("ProductFrom", "New")
-        ctx.startActivity(intent)
     }
 }

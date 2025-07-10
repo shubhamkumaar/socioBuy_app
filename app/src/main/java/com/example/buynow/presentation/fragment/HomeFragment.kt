@@ -1,197 +1,131 @@
 package com.example.buynow.presentation.fragment
 
-
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.*
+import android.widget.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
-import android.widget.ImageView
-import android.widget.LinearLayout
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
+import com.example.buynow.R
+import com.example.buynow.data.model.Product
+import com.example.buynow.presentation.activity.VisualSearchActivity
 import com.example.buynow.presentation.adapter.CoverProductAdapter
 import com.example.buynow.presentation.adapter.ProductAdapter
-import com.example.buynow.presentation.adapter.SaleProductAdapter
-
-import com.example.buynow.data.model.Product
-
-import com.example.buynow.R
-import com.example.buynow.presentation.activity.VisualSearchActivity
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import java.io.IOException
-
+import com.example.buynow.presentation.viewmodel.ProductViewModel
 
 class HomeFragment : Fragment() {
 
-//    NewProducts.json
-
-    lateinit var coverRecView:RecyclerView
-    lateinit var newRecView:RecyclerView
-    lateinit var saleRecView:RecyclerView
-    lateinit var coverProduct:ArrayList<Product>
-    lateinit var newProduct:ArrayList<Product>
-    lateinit var saleProduct:ArrayList<Product>
-
-    lateinit var coverProductAdapter: CoverProductAdapter
-    lateinit var newProductAdapter: ProductAdapter
-    lateinit var saleProductAdapter: SaleProductAdapter
-
-    lateinit var animationView: LottieAnimationView
-
-    lateinit var newLayout:LinearLayout
-    lateinit var saleLayout:LinearLayout
-
-
+    private lateinit var coverRecView: RecyclerView
+    private lateinit var animationView: LottieAnimationView
+    private lateinit var productViewModel: ProductViewModel
+    private var TAG = "HomeFragment"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
-        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+        requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
-
-
-        coverProduct = arrayListOf()
-        newProduct = arrayListOf()
-        saleProduct = arrayListOf()
-
-
+        // Views
         coverRecView = view.findViewById(R.id.coverRecView)
-        newRecView = view.findViewById(R.id.newRecView)
-        saleRecView = view.findViewById(R.id.saleRecView)
-        newLayout = view.findViewById(R.id.newLayout)
-        saleLayout = view.findViewById(R.id.saleLayout)
         animationView = view.findViewById(R.id.animationView)
 
-
-
-        val visualSearchBtn_homePage:ImageView = view.findViewById(R.id.visualSearchBtn_homePage)
-
-        hideLayout()
-
-        setCoverData()
-        setNewProductData()
-
-        coverRecView.layoutManager = LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL, false)
-        coverRecView.setHasFixedSize(true)
-        coverProductAdapter = CoverProductAdapter(activity as Context, coverProduct )
-        coverRecView.adapter = coverProductAdapter
-
-
-
-        newRecView.layoutManager = LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL, false)
-        newRecView.setHasFixedSize(true)
-        newProductAdapter = ProductAdapter(newProduct, activity as Context )
-        newRecView.adapter = newProductAdapter
-
-
-        saleRecView.layoutManager = LinearLayoutManager(context,LinearLayoutManager.HORIZONTAL, false)
-        saleRecView.setHasFixedSize(true)
-        saleProductAdapter = SaleProductAdapter(saleProduct, activity as Context )
-        saleRecView.adapter = saleProductAdapter
-
-
-
-        visualSearchBtn_homePage.setOnClickListener {
+        val visualSearchBtn: ImageView = view.findViewById(R.id.visualSearchBtn_homePage)
+        visualSearchBtn.setOnClickListener {
             startActivity(Intent(context, VisualSearchActivity::class.java))
         }
 
+        hideLayout()
 
+        productViewModel = ViewModelProvider(this)[ProductViewModel::class.java]
+        productViewModel.loadProducts()
 
+        productViewModel.productResult.observe(viewLifecycleOwner) { result ->
+            val (categories, coverProducts) = result
 
+            setupCoverProducts(coverProducts)
 
-        showLayout()
+            // Only take first 5 categories (sorted alphabetically or however you like)
+            val limitedCategories = categories.entries.take(5)
 
+            // Map to your fixed section IDs
+            val sectionIds = listOf(
+                R.id.category_underwear,
+                R.id.category_tools,
+                R.id.category_office,
+                R.id.category_men,
+                R.id.category_jewelry
+            )
+
+            // Display only up to 5 category sections
+            for ((index, entry) in limitedCategories.withIndex()) {
+                val (categoryName, productList) = entry
+                setCategorySection(view, sectionIds[index], categoryName, productList)
+            }
+
+            // Hide unused section layouts if API returns < 5 categories
+            for (i in limitedCategories.size until sectionIds.size) {
+                view.findViewById<View>(sectionIds[i])?.visibility = View.GONE
+            }
+
+            showLayout()
+        }
 
 
         return view
     }
 
+    private fun setupCoverProducts(coverProducts: List<Product>) {
+        val adapter = CoverProductAdapter(requireContext(), ArrayList(coverProducts))
+        coverRecView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        coverRecView.adapter = adapter
+    }
+
+    private fun setCategorySection(root: View, sectionId: Int, title: String, products: List<Product>?) {
+        val sectionView = root.findViewById<View>(sectionId)
+        if (sectionView == null) {
+            Log.e(TAG, "Section view null for ID=$sectionId ($title)")
+            return
+        }
+
+        val titleView = sectionView.findViewById<TextView>(R.id.categoryTitle)
+        val recyclerView = sectionView.findViewById<RecyclerView>(R.id.categoryRecycler)
+        if (titleView == null || recyclerView == null) {
+            Log.e(TAG, "Missing title or recycler view in section '$title'")
+            return
+        }
+
+        val productCount = products?.size ?: 0
+        Log.d(TAG, "$title → Products count: $productCount")
+
+        titleView.text = title
+        recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        try {
+            recyclerView.adapter = ProductAdapter(products ?: emptyList(), requireContext())
+        } catch (e: Exception) {
+            Log.e(TAG, "Adapter exception in '$title':", e)
+        }
+    }
 
 
-    private fun hideLayout(){
+
+
+    private fun hideLayout() {
         animationView.playAnimation()
         animationView.loop(true)
-        coverRecView.visibility = View.GONE
-        newLayout.visibility = View.GONE
-        saleLayout.visibility = View.GONE
         animationView.visibility = View.VISIBLE
+        coverRecView.visibility = View.GONE
     }
-    private fun showLayout(){
+
+    private fun showLayout() {
         animationView.pauseAnimation()
         animationView.visibility = View.GONE
         coverRecView.visibility = View.VISIBLE
-        newLayout.visibility = View.VISIBLE
-        saleLayout.visibility = View.VISIBLE
     }
-
-    fun getJsonData(context: Context, fileName: String): String? {
-
-        val jsonString: String
-        try {
-            jsonString = context.assets.open(fileName).bufferedReader().use { it.readText() }
-        } catch (ioException: IOException) {
-            ioException.printStackTrace()
-            return null
-        }
-        return jsonString
-    }
-
-    private fun setCoverData() {
-
-        val jsonFileString = context?.let {
-
-            getJsonData(it, "CoverProducts.json")
-        }
-        val gson = Gson()
-
-        val listCoverType = object : TypeToken<List<Product>>() {}.type
-
-        var coverD: List<Product> = gson.fromJson(jsonFileString, listCoverType)
-
-        coverD.forEachIndexed { idx, person ->
-
-            coverProduct.add(person)
-            saleProduct.add(person)
-
-        }
-
-
-    }
-
-    private fun setNewProductData() {
-
-        val jsonFileString = context?.let {
-
-            getJsonData(it, "NewProducts.json")
-        }
-        val gson = Gson()
-
-        val listCoverType = object : TypeToken<List<Product>>() {}.type
-
-        var coverD: List<Product> = gson.fromJson(jsonFileString, listCoverType)
-
-        coverD.forEachIndexed { idx, person ->
-
-
-            newProduct.add(person)
-
-
-        }
-
-
-    }
-
 }
-
-

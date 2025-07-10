@@ -5,6 +5,7 @@
     android:id="@+id/MainScrollView_homeFrag"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     android:background="@color/background"
     tools:context=".presentation.fragment.HomeFragment">
 
@@ -13,192 +14,88 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-
+        <!-- 🔷 Cover Products -->
+        <!-- 🔷 Cover Products -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/coverRecView"
             android:layout_width="match_parent"
             android:layout_height="480dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:scrollbars="none"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="8dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintTop_toTopOf="parent"
-            tools:listitem="@layout/cover_single">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:listitem="@layout/cover_single"
+            tools:context=".presentation.fragment.HomeFragment"
+            android:orientation="horizontal" />
 
 
-        </androidx.recyclerview.widget.RecyclerView>
-
-
+        <!-- 🔷 Static Sections for 5 Categories -->
         <LinearLayout
-            android:id="@+id/newLayout"
+            android:id="@+id/categorySectionContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/coverRecView"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-            app:layout_constraintTop_toBottomOf="@+id/coverRecView">
+            <!-- 1. Underwear & Sleepwear -->
+            <include
+                android:id="@+id/category_underwear"
+                layout="@layout/item_category_section" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:orientation="vertical"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+            <!-- 2. Tools & Home Improvement -->
+            <include
+                android:id="@+id/category_tools"
+                layout="@layout/item_category_section" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp">
+            <!-- 3. Office & School Supplies -->
+            <include
+                android:id="@+id/category_office"
+                layout="@layout/item_category_section" />
 
-                    <TextView
+            <!-- 4. Men -->
+            <include
+                android:id="@+id/category_men"
+                layout="@layout/item_category_section" />
 
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:fontFamily="@font/metropolis_semibold"
-                        android:text="New"
-                        android:textColor="@color/mainText"
-                        android:textSize="25sp" />
-
-                    <androidx.legacy.widget.Space
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1" />
-
-                    <TextView
-                        android:id="@+id/product_GroupViewAll"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:fontFamily="@font/metropolis_regular"
-                        android:gravity="center"
-                        android:text="View all"
-                        android:textColor="@color/mainText"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
-
-                <TextView
-
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
-                    android:fontFamily="@font/metropolis_regular"
-                    android:text="You Never seen Before"
-                    android:textColor="@color/textAd"
-                    android:textSize="11sp" />
-
-            </LinearLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/newRecView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/single_product">
-
-            </androidx.recyclerview.widget.RecyclerView>
+            <!-- 5. Jewelry & Watches -->
+            <include
+                android:id="@+id/category_jewelry"
+                layout="@layout/item_category_section" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/saleLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/newLayout"
-
-            >
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp">
-
-                    <TextView
-
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:fontFamily="@font/metropolis_semibold"
-                        android:text="Sale"
-                        android:textColor="@color/mainText"
-                        android:textSize="25sp" />
-
-                    <androidx.legacy.widget.Space
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1" />
-
-                    <TextView
-                        android:id="@+id/saleProduct_ViewAll"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:fontFamily="@font/metropolis_regular"
-                        android:gravity="center"
-                        android:text="View all"
-                        android:textColor="@color/mainText"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
-
-                <TextView
-
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
-                    android:fontFamily="@font/metropolis_regular"
-                    android:text="You Never seen Before"
-                    android:textColor="@color/textAd"
-                    android:textSize="11sp" />
-
-            </LinearLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/saleRecView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp">
-
-            </androidx.recyclerview.widget.RecyclerView>
-        </LinearLayout>
-
+        <!-- 🔷 Animation Loader -->
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/animationView"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:lottie_rawRes="@raw/circle_progress" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:lottie_rawRes="@raw/circle_progress"
+            app:lottie_loop="true" />
 
+        <!-- 🔷 Visual Search Button -->
         <ImageView
             android:id="@+id/visualSearchBtn_homePage"
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:layout_marginTop="35dp"
-            android:layout_marginRight="20dp"
+            android:layout_marginEnd="20dp"
             android:src="@drawable/ic_visual_search"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
 </ScrollView>

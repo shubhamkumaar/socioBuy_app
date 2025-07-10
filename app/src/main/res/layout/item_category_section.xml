@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/productContainer_single"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="20dp"
+    android:paddingBottom="8dp"
+    android:layout_marginTop="30dp"
+    android:layout_marginStart="10dp"
+    android:layout_marginEnd="10dp"
+    android:background="@color/background">
+
+    <!-- 🔹 Header Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/categoryTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/metropolis_semibold"
+            android:text="Category"
+            android:textColor="@color/mainText"
+            android:textSize="25sp"
+            tools:text="Category Title" />
+
+        <androidx.legacy.widget.Space
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+
+        <TextView
+            android:id="@+id/viewAllBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/metropolis_bold"
+            android:gravity="center"
+            android:text="View all"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="12sp"
+            tools:text="View all" />
+
+    </LinearLayout>
+
+    <!-- 🔹 Sub Text -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:fontFamily="@font/metropolis_regular"
+        android:text="You Never seen Before"
+        android:textColor="@color/textAd"
+        android:textSize="11sp" />
+
+    <!-- 🔹 Product List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/categoryRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:nestedScrollingEnabled="false"
+        tools:listitem="@layout/single_product" />
+</LinearLayout>
