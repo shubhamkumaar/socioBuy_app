@@ -48,8 +48,6 @@ import kotlinx.coroutines.withContext
 import kotlin.properties.Delegates
 
 class ProductDetailsActivity : AppCompatActivity() {
-
-    var productIndex: Int = 0
     lateinit var ProductFrom: String
     private lateinit var cartViewModel: CartViewModel
     lateinit var productImage_ProductDetailsPage: ImageView
@@ -69,8 +67,8 @@ class ProductDetailsActivity : AppCompatActivity() {
 
     lateinit var pName: String
     var qua: Int = 1
-    var pPrice: Int = 0
-    var pPid by Delegates.notNull<Int>()
+    var pPrice: Double  = 0.0
+    var pPid: Int = -1
     lateinit var pImage: String
 
     lateinit var cardNumber: String
@@ -85,7 +83,7 @@ class ProductDetailsActivity : AppCompatActivity() {
 
         productId = intent.getIntExtra("ProductIndex", -1)
         ProductFrom = intent.getStringExtra("ProductFrom").toString()
-        Log.d("ProductId",productId.toString())
+
         productImage_ProductDetailsPage = findViewById(R.id.productImage_ProductDetailsPage)
         productName_ProductDetailsPage = findViewById(R.id.productName_ProductDetailsPage)
         productPrice_ProductDetailsPage = findViewById(R.id.productPrice_ProductDetailsPage)
@@ -115,8 +113,7 @@ class ProductDetailsActivity : AppCompatActivity() {
 
 
         newProduct = arrayListOf()
-        setProductData()
-        setRecData()
+
 
         RecomRecView_ProductDetailsPage.layoutManager = LinearLayoutManager(
             this,
@@ -126,49 +123,77 @@ class ProductDetailsActivity : AppCompatActivity() {
         newProductAdapter = ProductAdapter(newProduct, this,"Category")
         RecomRecView_ProductDetailsPage.adapter = newProductAdapter
 
+        setProductData()
+        setRecData()
+
         backIv_ProfileFrag.setOnClickListener {
             onBackPressed()
         }
         loadRecentlyBoughtContacts()
 
         addToCart_ProductDetailsPage.setOnClickListener {
+            Log.d("AddToCartCheck", "pName=${if (::pName.isInitialized) pName else "NotInit"}, pPid=$pPid, pPrice=$pPrice")
 
-            val bottomSheetDialod = BottomSheetDialog(
-                this, R.style.BottomSheetDialogTheme
-            )
+            val bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
 
-            val bottomSheetView = LayoutInflater.from(applicationContext).inflate(
+            val bottomSheetView = LayoutInflater.from(this).inflate(
                 R.layout.fragment_add_to_bag,
                 findViewById<ConstraintLayout>(R.id.bottomSheet)
             )
 
-            bottomSheetView.findViewById<View>(R.id.addToCart_BottomSheet).setOnClickListener {
+            val quantityEditText = bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom)
+            val plusButton = bottomSheetView.findViewById<LinearLayout>(R.id.plusLayout)
+            val minusButton = bottomSheetView.findViewById<LinearLayout>(R.id.minusLayout)
+            val addToCartButton = bottomSheetView.findViewById<View>(R.id.addToCart_BottomSheet)
 
-                pPrice *= bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).text.toString()
-                    .toInt()
-                addProductToBag()
-                bottomSheetDialod.dismiss()
-            }
+            // Default quantity
+            qua = 1
+            quantityEditText.setText(qua.toString())
 
-            bottomSheetView.findViewById<LinearLayout>(R.id.minusLayout).setOnClickListener {
-                if(bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).text.toString()
-                        .toInt() > 1){
-                    qua--
-                    bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).setText(qua.toString())
-                }
-            }
-
-            bottomSheetView.findViewById<LinearLayout>(R.id.plusLayout).setOnClickListener {
-                if(bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).text.toString()
-                        .toInt() < 10){
+            plusButton.setOnClickListener {
+                if (qua < 10) {
                     qua++
-                    bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).setText(qua.toString())
+                    quantityEditText.setText(qua.toString())
                 }
             }
 
-            bottomSheetDialod.setContentView(bottomSheetView)
-            bottomSheetDialod.show()
+            minusButton.setOnClickListener {
+                if (qua > 1) {
+                    qua--
+                    quantityEditText.setText(qua.toString())
+                }
+            }
 
+            addToCartButton.setOnClickListener {
+                val quantityText = quantityEditText.text.toString()
+                val quantity = quantityText.toIntOrNull()
+
+                if (quantity == null || quantity <= 0) {
+                    Toast.makeText(this, "Please enter a valid quantity", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                // Validate product data
+                if (!::pName.isInitialized || !::pImage.isInitialized || pPrice == 0.0 || pPid == 0) {
+                    Toast.makeText(this, "Product not loaded yet", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val totalPrice = pPrice * quantity.toDouble()
+
+                cartViewModel = ViewModelProviders.of(this).get(CartViewModel::class.java)
+                try {
+                    cartViewModel.insert(ProductEntity(pName, quantity, totalPrice, pPid, pImage))
+                    toast("Added to Bag Successfully")
+                    bottomSheetDialog.dismiss()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(this, "DB Error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                }
+
+            }
+            bottomSheetDialog.setContentView(bottomSheetView)
+            bottomSheetDialog.show()
         }
 
     }
@@ -294,7 +319,7 @@ class ProductDetailsActivity : AppCompatActivity() {
 
         cartViewModel = ViewModelProviders.of(this).get(CartViewModel::class.java)
 
-        cartViewModel.insert(ProductEntity(pName, qua, pPrice, pPid, pImage))
+        cartViewModel.insert(ProductEntity(pName, qua, pPrice, productId, pImage))
         toast("Add to Bag Successfully")
     }
 
@@ -316,7 +341,6 @@ class ProductDetailsActivity : AppCompatActivity() {
         val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val authToken = sharedPref.getString("auth_token", null)
         Log.d("TokenAuth",authToken.toString())
-        var pr : Product? = null
         if(authToken != null){
             CoroutineScope(Dispatchers.IO).launch {
                 try{
@@ -338,11 +362,11 @@ class ProductDetailsActivity : AppCompatActivity() {
                         RatingProductDetails.text = "${pr.productRating} Rating on this Product."
 
                         pName = pr.productName
-                        pPrice = pr.productPrice.toInt()
+                        pPrice = pr.productPrice.toDouble()
                         pPid = pr.productId
                         pImage = pr.productImage
+                        Log.d("ProductDetailsAdd","Name :$pName, Price: $pPrice, pPid: $pPid, pImage: $pImage")
                     }
-                    Log.d("ProductDataId",pr.toString())
                 } catch (e:Exception){
                     withContext(Dispatchers.Main) {
 //                        loadingDialog.dismissDialog() // Dismiss dialog on error
@@ -396,14 +420,26 @@ class ProductDetailsActivity : AppCompatActivity() {
     }
 
     private fun setRecData() {
-
-        var fileJson: String = ""
-
-        if (ProductFrom.equals("Cover")) {
-            fileJson = "NewProducts.json"
+        val fileJson = if (ProductFrom == "Cover") {
+            "NewProducts.json"
+        } else {
+            "CoverProducts.json"
         }
-        if (ProductFrom.equals("New")) {
-            fileJson = "CoverProducts.json"
+
+        val jsonFileString = getJsonData(this, fileJson)
+
+        jsonFileString?.let {
+            val gson = Gson()
+            val productType = object : TypeToken<List<Product>>() {}.type
+            val products: List<Product> = gson.fromJson(it, productType)
+
+            // Remove the current product from recommendations (optional)
+            val filtered = products.filter { it.productId != productId }
+
+            newProduct.clear()
+            newProduct.addAll(filtered)
+
+            newProductAdapter.notifyDataSetChanged()
         }
     }
 }

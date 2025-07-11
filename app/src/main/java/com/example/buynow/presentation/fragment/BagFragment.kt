@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import com.example.buynow.presentation.LoadingDialog
 
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -35,13 +36,14 @@ import com.example.buynow.data.model.AiResponse
 import com.example.buynow.presentation.activity.RetrofitInstance
 
 class BagFragment : Fragment(), CartItemClickAdapter {
+    private var loadingDialog: LoadingDialog? = null
 
     lateinit var cartRecView:RecyclerView
     lateinit var cartAdapter: CartAdapter
     lateinit var animationView: LottieAnimationView
     lateinit var totalPriceBagFrag:TextView
     lateinit var Item: ArrayList<ProductEntity>
-     var sum:Int = 0
+     var sum:Double = 0.0
 
     private lateinit var cartViewModel: CartViewModel
     private var dialog: AlertDialog? = null
@@ -52,6 +54,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
     ): View? {
 
         val view = inflater.inflate(R.layout.fragment_bag, container, false)
+        loadingDialog = LoadingDialog(requireActivity())
 
         cartRecView = view.findViewById(R.id.cartRecView)
         animationView = view.findViewById(R.id.animationViewCartPage)
@@ -82,7 +85,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
             List?.let {
                 cartAdapter.updateList(it)
                 Item.clear()
-                sum = 0
+                sum = 0.0
                 Item.addAll(it)
             }
 
@@ -114,15 +117,20 @@ class BagFragment : Fragment(), CartItemClickAdapter {
             val authToken = sharedPref.getString("auth_token", null)
 
             if (authToken == null) {
-                Toast.makeText(context, "Missing Auth Token!", Toast.LENGTH_SHORT).show()
+                if (isAdded) {
+                    context?.let {
+                        Toast.makeText(it, "Missing Auth Token!", Toast.LENGTH_SHORT).show()
+                    }
+                }
                 return@setOnClickListener
             }
 
             val productIds = if (Item.isNotEmpty()) {
                 Item.map { it.pId }
             } else {
-                listOf(39764445) // Default fallback product
+                listOf(39764445) // Fallback product
             }
+            loadingDialog?.startLoadingDialog()
 
             Log.d("AI_REQUEST", "Sending productIds: $productIds")
 
@@ -131,6 +139,9 @@ class BagFragment : Fragment(), CartItemClickAdapter {
             RetrofitInstance.apiInterface.getAiRecommendation("Bearer $authToken", request)
                 .enqueue(object : retrofit2.Callback<AiResponse> {
                     override fun onResponse(call: Call<AiResponse>, response: retrofit2.Response<AiResponse>) {
+                        loadingDialog?.dismissDialog()
+                        if (!isAdded) return
+
                         if (response.isSuccessful) {
                             val responseBody = response.body()?.message ?: "[]"
                             Log.d("AI_RESPONSE_RAW", responseBody)
@@ -147,19 +158,33 @@ class BagFragment : Fragment(), CartItemClickAdapter {
                                 }
                             } catch (e: Exception) {
                                 Log.e("AI_PARSE_ERROR", "Failed to parse AI response", e)
-                                Toast.makeText(context, "Parsing error in AI response", Toast.LENGTH_SHORT).show()
+                                if (isAdded) {
+                                    context?.let {
+                                        Toast.makeText(it, "Parsing error in AI response", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                             }
                         } else {
-                            Toast.makeText(context, "AI API failed: ${response.code()}", Toast.LENGTH_SHORT).show()
+                            if (isAdded) {
+                                context?.let {
+                                    Toast.makeText(it, "AI API failed: ${response.code()}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         }
                     }
 
                     override fun onFailure(call: Call<AiResponse>, t: Throwable) {
-                        Toast.makeText(context, "AI API Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
                         Log.e("AI_FAILURE", "Exception", t)
+                        loadingDialog?.dismissDialog()
+                        if (isAdded) {
+                            context?.let {
+                                Toast.makeText(it, "AI API Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
                 })
         }
+
 
 
         checkoutBtn.setOnClickListener{
@@ -185,6 +210,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
         return view
     }
     private fun showAiDialog(productName: String, message: String) {
+        if (!isAdded) return
         val builder = AlertDialog.Builder(requireContext())
         builder.setTitle("🧠 AI Suggestion")
         builder.setMessage("✨ Product: $productName\n\n💬 Suggestion:\n$message")
@@ -192,13 +218,19 @@ class BagFragment : Fragment(), CartItemClickAdapter {
         builder.show()
     }
 
+
     fun dismissDialog() {
         dialog?.dismiss()
     }
     override fun onItemDeleteClick(product: ProductEntity) {
         cartViewModel.deleteCart(product)
-        Toast.makeText(context,"Removed From Bag",Toast.LENGTH_SHORT).show()
+        if (isAdded) {
+            context?.let {
+                Toast.makeText(it, "Removed From Bag", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
+
 
     override fun onItemUpdateClick(product: ProductEntity) {
         cartViewModel.updateCart(product)
