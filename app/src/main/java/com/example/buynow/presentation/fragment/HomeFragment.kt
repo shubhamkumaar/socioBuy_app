@@ -107,7 +107,7 @@ class HomeFragment : Fragment() {
         titleView.text = title
         recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         try {
-            recyclerView.adapter = ProductAdapter(products ?: emptyList(), requireContext())
+            recyclerView.adapter = ProductAdapter(products ?: emptyList(), requireContext(),"Category")
         } catch (e: Exception) {
             Log.e(TAG, "Adapter exception in '$title':", e)
         }

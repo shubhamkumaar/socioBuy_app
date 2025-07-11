@@ -42,3 +42,7 @@ data class ProductById (
     val same_brand: List<SimilarProduct>,
     val same_product: List<SimilarProduct>
 )
+
+data class AiRequest(val productId: List<Int>)
+
+data class AiResponse(val message: String)

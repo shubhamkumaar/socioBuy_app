@@ -13,7 +13,7 @@ import com.example.buynow.R
 import com.example.buynow.data.model.Product
 import com.example.buynow.presentation.activity.ProductDetailsActivity
 
-class ProductAdapter(private val products: List<Product>, private val context: Context) :
+class ProductAdapter(private val products: List<Product>, private val context: Context,private val productFrom: String) :
 
     RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
@@ -44,11 +44,16 @@ class ProductAdapter(private val products: List<Product>, private val context: C
             //.placeholder(R.drawable)
             .into(holder.productImage)
 
-        holder.productContainer.setOnClickListener {
+        // Reusable click logic
+        val openDetails = View.OnClickListener {
             val intent = Intent(context, ProductDetailsActivity::class.java)
-            intent.putExtra("ProductIndex", position)
-            intent.putExtra("ProductFrom", "Category")
+            intent.putExtra("ProductIndex", product.productId) // Pass actual ID
+            intent.putExtra("ProductFrom", productFrom) // "Category", "Cover", etc.
             context.startActivity(intent)
         }
+
+        // ✅ Make both image and container clickable
+        holder.productImage.setOnClickListener(openDetails)
+        holder.productContainer.setOnClickListener(openDetails)
     }
 }

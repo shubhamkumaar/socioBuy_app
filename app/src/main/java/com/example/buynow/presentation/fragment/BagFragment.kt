@@ -3,6 +3,7 @@ package com.example.buynow.presentation.fragment
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import retrofit2.Call
 
 import androidx.lifecycle.Observer
 
@@ -28,6 +30,9 @@ import com.example.buynow.R
 
 import com.example.buynow.data.local.room.CartViewModel
 import com.example.buynow.data.local.room.ProductEntity
+import com.example.buynow.data.model.AiRequest
+import com.example.buynow.data.model.AiResponse
+import com.example.buynow.presentation.activity.RetrofitInstance
 
 class BagFragment : Fragment(), CartItemClickAdapter {
 
@@ -104,16 +109,58 @@ class BagFragment : Fragment(), CartItemClickAdapter {
             totalPriceBagFrag.text = "$" + sum
         })
 
-        aiSuggestion.setOnClickListener{
+        aiSuggestion.setOnClickListener {
+            val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            val authToken = sharedPref.getString("auth_token", null)
 
-            val builder: AlertDialog.Builder = AlertDialog.Builder(context)
-            builder
-                .setMessage("Recommend by friend")
-                .setTitle("AI Suggestion")
+            if (authToken == null) {
+                Toast.makeText(context, "Missing Auth Token!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-            val dialog: AlertDialog = builder.create()
-            dialog.show()
+            val productIds = if (Item.isNotEmpty()) {
+                Item.map { it.pId }
+            } else {
+                listOf(39764445) // Default fallback product
+            }
+
+            Log.d("AI_REQUEST", "Sending productIds: $productIds")
+
+            val request = AiRequest(productId = productIds)
+
+            RetrofitInstance.apiInterface.getAiRecommendation("Bearer $authToken", request)
+                .enqueue(object : retrofit2.Callback<AiResponse> {
+                    override fun onResponse(call: Call<AiResponse>, response: retrofit2.Response<AiResponse>) {
+                        if (response.isSuccessful) {
+                            val responseBody = response.body()?.message ?: "[]"
+                            Log.d("AI_RESPONSE_RAW", responseBody)
+
+                            try {
+                                val jsonArray = org.json.JSONArray(responseBody)
+                                if (jsonArray.length() > 0) {
+                                    val obj = jsonArray.getJSONObject(0)
+                                    val productName = obj.optString("productName", "Unknown Product")
+                                    val message = obj.optString("message", "No message available.")
+                                    showAiDialog(productName, message)
+                                } else {
+                                    showAiDialog("No Match", "No AI recommendations were found.")
+                                }
+                            } catch (e: Exception) {
+                                Log.e("AI_PARSE_ERROR", "Failed to parse AI response", e)
+                                Toast.makeText(context, "Parsing error in AI response", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(context, "AI API failed: ${response.code()}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onFailure(call: Call<AiResponse>, t: Throwable) {
+                        Toast.makeText(context, "AI API Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
+                        Log.e("AI_FAILURE", "Exception", t)
+                    }
+                })
         }
+
 
         checkoutBtn.setOnClickListener{
             fun startOrderPlacedDialog() {
@@ -137,6 +184,14 @@ class BagFragment : Fragment(), CartItemClickAdapter {
         }
         return view
     }
+    private fun showAiDialog(productName: String, message: String) {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("🧠 AI Suggestion")
+        builder.setMessage("✨ Product: $productName\n\n💬 Suggestion:\n$message")
+        builder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+        builder.show()
+    }
+
     fun dismissDialog() {
         dialog?.dismiss()
     }

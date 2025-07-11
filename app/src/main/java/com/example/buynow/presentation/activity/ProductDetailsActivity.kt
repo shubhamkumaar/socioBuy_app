@@ -85,7 +85,7 @@ class ProductDetailsActivity : AppCompatActivity() {
 
         productId = intent.getIntExtra("ProductIndex", -1)
         ProductFrom = intent.getStringExtra("ProductFrom").toString()
-        Log.d("ProductId",productIndex.toString())
+        Log.d("ProductId",productId.toString())
         productImage_ProductDetailsPage = findViewById(R.id.productImage_ProductDetailsPage)
         productName_ProductDetailsPage = findViewById(R.id.productName_ProductDetailsPage)
         productPrice_ProductDetailsPage = findViewById(R.id.productPrice_ProductDetailsPage)
@@ -123,7 +123,7 @@ class ProductDetailsActivity : AppCompatActivity() {
             LinearLayoutManager.HORIZONTAL, false
         )
         RecomRecView_ProductDetailsPage.setHasFixedSize(true)
-        newProductAdapter = ProductAdapter(newProduct, this)
+        newProductAdapter = ProductAdapter(newProduct, this,"Category")
         RecomRecView_ProductDetailsPage.adapter = newProductAdapter
 
         backIv_ProfileFrag.setOnClickListener {

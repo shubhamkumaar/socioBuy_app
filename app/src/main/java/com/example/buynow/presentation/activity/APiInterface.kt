@@ -44,5 +44,11 @@ interface ApiInterface {
         @Path("productId") productId: Int=0,
         @Header("Authorization") authToken: String
     ) : ProductById
+
+    @POST("/ai")
+    fun getAiRecommendation(
+        @Header("Authorization") token: String,
+        @Body request: AiRequest
+    ): Call<AiResponse>
 }
 
