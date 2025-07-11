@@ -2,6 +2,7 @@ package com.example.buynow.presentation.activity
 
 import com.example.buynow.data.model.*
 import com.example.buynow.presentation.fragment.ImportContactRequest
+import com.google.android.gms.common.api.Response
 import com.google.android.gms.common.internal.safeparcel.SafeParcelable.Param
 import retrofit2.Call
 import retrofit2.http.Body
@@ -10,6 +11,7 @@ import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface ApiInterface {
     @FormUrlEncoded // MANDATORY: Indicates that the request body will be URL-encoded form data
@@ -36,5 +38,11 @@ interface ApiInterface {
     fun getProducts(
         @Header("Authorization") token: String = "Bearer eyJhbGciOi..."
     ): Call<ProductResponse>
+
+    @GET("products/{productId}")
+    suspend fun getProductById(
+        @Path("productId") productId: Int=0,
+        @Header("Authorization") authToken: String
+    ) : ProductById
 }
 

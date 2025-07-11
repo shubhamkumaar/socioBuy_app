@@ -39,7 +39,7 @@ class LoginActivity : AppCompatActivity() {
     lateinit var passwordError: TextView
     private val TAG = "LoginActivity"
 
-    private val TOKEN_EXPIRATION_MILLIS = TimeUnit.MINUTES.toMillis(60)
+    private val TOKEN_EXPIRATION_MILLIS = TimeUnit.MINUTES.toMillis(1440)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

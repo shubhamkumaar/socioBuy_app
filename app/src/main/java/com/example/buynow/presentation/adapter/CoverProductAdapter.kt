@@ -35,7 +35,7 @@ class CoverProductAdapter(var ctx: Context, private val coverProductList: ArrayL
 
         holder.productCheck_coverPage.setOnClickListener {
 
-            goDetailsPage(position)
+            goDetailsPage(coverPro.productId)
 
 
         }

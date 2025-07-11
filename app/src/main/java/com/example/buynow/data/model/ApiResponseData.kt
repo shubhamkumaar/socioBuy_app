@@ -28,3 +28,17 @@ data class SignUpRequest(
 data class ImportContactResponse(
     val message: String
 )
+
+data class SimilarProduct(
+    val timestamp: String,
+    val productBrand: String,
+    val name: String,
+    val relation: String,
+    val productName: String,
+    val productId: Int
+)
+data class ProductById (
+    val product :Product,
+    val same_brand: List<SimilarProduct>,
+    val same_product: List<SimilarProduct>
+)

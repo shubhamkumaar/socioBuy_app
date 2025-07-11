@@ -35,17 +35,23 @@ import android.view.animation.AccelerateDecelerateInterpolator
 
 // For bold text (Typeface)
 import android.graphics.Typeface
+import android.util.Log
 
 // For image transition using Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-
+import com.example.buynow.data.model.ProductById
+import com.example.buynow.presentation.LoadingDialog
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.properties.Delegates
 
 class ProductDetailsActivity : AppCompatActivity() {
 
-    var productIndex: Int = -1
+    var productIndex: Int = 0
     lateinit var ProductFrom: String
     private lateinit var cartViewModel: CartViewModel
-    private val TAG = "TAG"
     lateinit var productImage_ProductDetailsPage: ImageView
     lateinit var backIv_ProfileFrag: ImageView
     lateinit var productName_ProductDetailsPage: TextView
@@ -55,7 +61,7 @@ class ProductDetailsActivity : AppCompatActivity() {
     lateinit var RatingProductDetails: TextView
     lateinit var productRating_singleProduct: RatingBar
 
-
+    lateinit var loadingDialog: LoadingDialog
 
     lateinit var RecomRecView_ProductDetailsPage: RecyclerView
     lateinit var newProductAdapter: ProductAdapter
@@ -64,11 +70,11 @@ class ProductDetailsActivity : AppCompatActivity() {
     lateinit var pName: String
     var qua: Int = 1
     var pPrice: Int = 0
-    lateinit var pPid: String
+    var pPid by Delegates.notNull<Int>()
     lateinit var pImage: String
 
     lateinit var cardNumber: String
-
+    var productId :Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,9 +83,9 @@ class ProductDetailsActivity : AppCompatActivity() {
         window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
 
-        productIndex = intent.getIntExtra("ProductIndex", -1)
+        productId = intent.getIntExtra("ProductIndex", -1)
         ProductFrom = intent.getStringExtra("ProductFrom").toString()
-
+        Log.d("ProductId",productIndex.toString())
         productImage_ProductDetailsPage = findViewById(R.id.productImage_ProductDetailsPage)
         productName_ProductDetailsPage = findViewById(R.id.productName_ProductDetailsPage)
         productPrice_ProductDetailsPage = findViewById(R.id.productPrice_ProductDetailsPage)
@@ -307,50 +313,90 @@ class ProductDetailsActivity : AppCompatActivity() {
     }
 
     private fun setProductData() {
+        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val authToken = sharedPref.getString("auth_token", null)
+        Log.d("TokenAuth",authToken.toString())
+        var pr : Product? = null
+        if(authToken != null){
+            CoroutineScope(Dispatchers.IO).launch {
+                try{
+                    Log.d("TRYBLOCK",productId.toString())
+                    val response :ProductById = RetrofitInstance.apiInterface.getProductById(
+                        productId = productId,authToken="Bearer $authToken"
+                    )
+                    withContext(Dispatchers.Main) {
+                        val pr = response.product
+                        Glide.with(applicationContext)
+                            .load(pr.productImage)
+                            .into(productImage_ProductDetailsPage)
 
-        var fileJson: String = ""
+                        productName_ProductDetailsPage.text = pr.productName
+                        productPrice_ProductDetailsPage.text = "$${pr.productPrice}"
+                        productBrand_ProductDetailsPage.text = pr.productBrand
+                        productDes_ProductDetailsPage.text = pr.productDes
+                        productRating_singleProduct.rating = pr.productRating.toFloat()
+                        RatingProductDetails.text = "${pr.productRating} Rating on this Product."
 
-        if (ProductFrom.equals("Cover")) {
-            fileJson = "CoverProducts.json"
+                        pName = pr.productName
+                        pPrice = pr.productPrice.toInt()
+                        pPid = pr.productId
+                        pImage = pr.productImage
+                    }
+                    Log.d("ProductDataId",pr.toString())
+                } catch (e:Exception){
+                    withContext(Dispatchers.Main) {
+//                        loadingDialog.dismissDialog() // Dismiss dialog on error
+                        Toast.makeText(
+                            applicationContext, "Error: ${e.localizedMessage}", Toast.LENGTH_LONG
+                        ).show()
+                        e.printStackTrace() // Log the error for debugging
+                    }
+                }
+            }
         }
-        if (ProductFrom.equals("New")) {
-            fileJson = "NewProducts.json"
-        }
 
-
-        val jsonFileString = this.let {
-
-            getJsonData(it, fileJson)
-        }
-
-        val gson = Gson()
-
-
-        val listCoverType = object : TypeToken<List<Product>>() {}.type
-
-        var coverD: List<Product> = gson.fromJson(jsonFileString, listCoverType)
-
-        Glide.with(applicationContext)
-            .load(coverD[productIndex].productImage)
-            .into(productImage_ProductDetailsPage)
-
-        productName_ProductDetailsPage.text = coverD[productIndex].productName
-        productPrice_ProductDetailsPage.text = "$" + coverD[productIndex].productPrice
-        productBrand_ProductDetailsPage.text = coverD[productIndex].productBrand
-        productDes_ProductDetailsPage.text = coverD[productIndex].productDes
-        productRating_singleProduct.rating = coverD[productIndex].productRating
-        RatingProductDetails.text = coverD[productIndex].productRating.toString() + " Rating on this Product."
-
-        pName = coverD[productIndex].productName
-        pPrice = coverD[productIndex].productPrice.toInt()
-        pPid = coverD[productIndex].productId
-        pImage = coverD[productIndex].productImage
+//        var fileJson: String = ""
+//
+//        if (ProductFrom.equals("Cover")) {
+//            fileJson = "CoverProducts.json"
+//        }
+//        if (ProductFrom.equals("New")) {
+//            fileJson = "NewProducts.json"
+//        }
+//
+//
+//        val jsonFileString = this.let {
+//
+//            getJsonData(it, fileJson)
+//        }
+//
+//        val gson = Gson()
+//
+//
+//        val listCoverType = object : TypeToken<List<Product>>() {}.type
+//
+//        var coverD: List<Product> = gson.fromJson(jsonFileString, listCoverType)
+//
+//        Glide.with(applicationContext)
+//            .load(coverD[productIndex].productImage)
+//            .into(productImage_ProductDetailsPage)
+//
+//            productName_ProductDetailsPage.text = pr?.productName ?: coverD[productIndex].productName
+//            productPrice_ProductDetailsPage.text = "$" + (pr?.productPrice ?: 0)
+//            productBrand_ProductDetailsPage.text = pr?.productBrand ?: coverD[productIndex].productBrand
+//            productDes_ProductDetailsPage.text = pr?.productDes ?: coverD[productIndex].productDes
+//            productRating_singleProduct.rating = coverD[productIndex].productRating
+//            RatingProductDetails.text = coverD[productIndex].productRating.toString() + " Rating on this Product."
+//
+//            pName = coverD[productIndex].productName
+//            pPrice = coverD[productIndex].productPrice.toInt()
+//            pPid = coverD[productIndex].productId
+//            pImage = pr?.productImage?: coverD[productIndex].productImage
 
     }
 
     private fun setRecData() {
 
-
         var fileJson: String = ""
 
         if (ProductFrom.equals("Cover")) {
@@ -359,30 +405,6 @@ class ProductDetailsActivity : AppCompatActivity() {
         if (ProductFrom.equals("New")) {
             fileJson = "CoverProducts.json"
         }
-
-
-        val jsonFileString = this.let {
-
-            getJsonData(it, fileJson)
-        }
-        val gson = Gson()
-
-        val listCoverType = object : TypeToken<List<Product>>() {}.type
-
-        var coverD: List<Product> = gson.fromJson(jsonFileString, listCoverType)
-
-        coverD.forEachIndexed { idx, person ->
-
-            if (idx < 9) {
-                newProduct.add(person)
-            }
-
-
-        }
-
-
     }
-
 }
-
 
