@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 data class ProductEntity (
     @ColumnInfo(name = "Product_Name") var name: String,
     @ColumnInfo(name = "Product_Quantity") var qua: Int,
-    @ColumnInfo(name = "Product_Price") var price: Int,
+    @ColumnInfo(name = "Product_Price") var price: Double,
     @ColumnInfo(name = "Product_ID") var pId: Int,
     @ColumnInfo(name = "Product_Image") var Image: String,
 

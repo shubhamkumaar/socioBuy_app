@@ -36,7 +36,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
     lateinit var animationView: LottieAnimationView
     lateinit var totalPriceBagFrag:TextView
     lateinit var Item: ArrayList<ProductEntity>
-     var sum:Int = 0
+     var sum:Double = 0.0
 
     private lateinit var cartViewModel: CartViewModel
     private var dialog: AlertDialog? = null
@@ -77,7 +77,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
             List?.let {
                 cartAdapter.updateList(it)
                 Item.clear()
-                sum = 0
+                sum = 0.0
                 Item.addAll(it)
             }
 
