@@ -101,12 +101,13 @@ class BagFragment : Fragment(), CartItemClickAdapter {
                     animationView.pauseAnimation()
                 }
 
-            sum = 0.0
-            Item.forEach {
-                sum += it.price * it.qua
+                sum = 0.0
+                Item.forEach {
+                    sum += it.price * it.qua
+                }
+                totalPriceBagFrag.text = "₹${String.format("%.2f", sum)}"
             }
-            totalPriceBagFrag.text = "₹${String.format("%.2f", sum)}"
-        })
+        )
 
         aiSuggestion.setOnClickListener {
             val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -358,10 +359,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
         totalPriceBagFrag.text = "₹${String.format("%.2f", total)}"
     }
 
-
-
     override fun onItemUpdateClick(product: ProductEntity) {
         cartViewModel.updateCart(product)
     }
 }
-
