@@ -11,26 +11,23 @@ import com.bumptech.glide.Glide
 import com.example.buynow.R
 import com.example.buynow.data.local.room.ProductEntity
 
-class CartAdapter(private val ctx: Context, val listener: CartItemClickAdapter):RecyclerView.Adapter<CartAdapter.CartViewHolder>() {
+class CartAdapter(private val ctx: Context, val listener: CartItemClickAdapter) : RecyclerView.Adapter<CartAdapter.CartViewHolder>() {
 
     private val cartList: ArrayList<ProductEntity> = arrayListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CartViewHolder {
-        val cartView = LayoutInflater.from(ctx).inflate(R.layout.cart_item_single,parent,false)
+        val cartView = LayoutInflater.from(ctx).inflate(R.layout.cart_item_single, parent, false)
 
         return CartViewHolder(cartView)
     }
 
     override fun onBindViewHolder(holder: CartViewHolder, position: Int) {
-
-
         val cartItem: ProductEntity = cartList[position]
 
         holder.cartName.text = cartItem.name
         holder.cartPrice.text = "₹"+ cartItem.price
         holder.quantityTvCart.text = cartItem.qua.toString()
         holder.cartMore.setOnClickListener {
-
         }
 
         Glide.with(ctx)
@@ -68,11 +65,7 @@ class CartAdapter(private val ctx: Context, val listener: CartItemClickAdapter):
         return cartList.size
     }
 
-
-
-
-
-    class CartViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
+    class CartViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         val cartImage: ImageView = itemView.findViewById(R.id.cartImage)
         val cartMore: ImageView = itemView.findViewById(R.id.cartMore)
@@ -81,22 +74,17 @@ class CartAdapter(private val ctx: Context, val listener: CartItemClickAdapter):
         val quantityTvCart: TextView = itemView.findViewById(R.id.quantityTvCart)
         val btnIncrease: View = itemView.findViewById(R.id.plusLayout)
         val btnDecrease: View = itemView.findViewById(R.id.minusLayout)
-
     }
 
-    fun updateList(newList: List<ProductEntity>){
+    fun updateList(newList: List<ProductEntity>) {
         cartList.clear()
         cartList.addAll(newList)
         notifyDataSetChanged()
     }
-
-
 }
 
-interface CartItemClickAdapter{
+interface CartItemClickAdapter {
     fun onItemDeleteClick(product: ProductEntity)
     fun onItemUpdateClick(product: ProductEntity)
     fun onCartChanged(cartList: List<ProductEntity>)
-
-
 }

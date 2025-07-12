@@ -3,15 +3,20 @@ package com.example.buynow.utils
 object CardValidator {
 
     fun isValid(number: Long): Boolean {
-        return (getSize(number) in 13..16 &&
-                (prefixMatched(number, 4) ||
+        return (
+            getSize(number) in 13..16 &&
+                (
+                    prefixMatched(number, 4) ||
                         prefixMatched(number, 5) ||
                         prefixMatched(number, 37) ||
-                        prefixMatched(number, 6)) &&
-                (sumOfDoubleEvenPlace(number) +
-                        sumOfOddPlace(number)) % 10 == 0)
+                        prefixMatched(number, 6)
+                    ) &&
+                (
+                sumOfDoubleEvenPlace(number) +
+                    sumOfOddPlace(number)
+                ) % 10 == 0
+            )
     }
-
 
     private fun sumOfDoubleEvenPlace(number: Long): Int {
         var sum = 0

@@ -2,8 +2,6 @@ package com.example.buynow.presentation.activity
 
 import com.example.buynow.data.model.*
 import com.example.buynow.presentation.fragment.ImportContactRequest
-import com.google.android.gms.common.api.Response
-import com.google.android.gms.common.internal.safeparcel.SafeParcelable.Param
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.Field
@@ -41,9 +39,9 @@ interface ApiInterface {
 
     @GET("products/{productId}")
     suspend fun getProductById(
-        @Path("productId") productId: Int=0,
+        @Path("productId") productId: Int = 0,
         @Header("Authorization") authToken: String
-    ) : ProductById
+    ): ProductById
 
     @POST("/ai")
     fun getAiRecommendation(
@@ -51,4 +49,3 @@ interface ApiInterface {
         @Body request: AiRequest
     ): Call<AiResponse>
 }
-

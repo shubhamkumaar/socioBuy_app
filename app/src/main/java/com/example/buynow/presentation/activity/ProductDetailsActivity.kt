@@ -49,7 +49,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.*
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -73,21 +72,20 @@ class ProductDetailsActivity : AppCompatActivity() {
 
     lateinit var pName: String
     var qua: Int = 1
-    var pPrice: Double  = 0.0
+    var pPrice: Double = 0.0
     var pPid: Int = -1
     lateinit var pImage: String
 
     lateinit var cardNumber: String
-    var productId :Int = 0
+    var productId: Int = 0
 
-    lateinit var sameBrand :List<SimilarProduct>
-    lateinit var sameProduct :List<SimilarProduct>
+    lateinit var sameBrand: List<SimilarProduct>
+    lateinit var sameProduct: List<SimilarProduct>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_product_details)
 
         window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-
 
         productId = intent.getIntExtra("ProductIndex", -1)
         ProductFrom = intent.getStringExtra("ProductFrom").toString()
@@ -102,33 +100,30 @@ class ProductDetailsActivity : AppCompatActivity() {
         RecomRecView_ProductDetailsPage = findViewById(R.id.RecomRecView_ProductDetailsPage)
         backIv_ProfileFrag = findViewById(R.id.backIv_ProfileFrag)
         val addToCart_ProductDetailsPage: Button = findViewById(R.id.addToCart_ProductDetailsPage)
-        val shippingAddress_productDetailsPage:LinearLayout = findViewById(R.id.shippingAddress_productDetailsPage)
-        val cardNumberProduct_Details:TextView = findViewById(R.id.cardNumberProduct_Details)
+        val shippingAddress_productDetailsPage: LinearLayout = findViewById(R.id.shippingAddress_productDetailsPage)
+        val cardNumberProduct_Details: TextView = findViewById(R.id.cardNumberProduct_Details)
 
         cardNumber = GetDefCard()
 
-        if(cardNumber == "" || cardNumber == null){
+        if (cardNumber == "" || cardNumber == null) {
             cardNumberProduct_Details.text = "You Have No Cards"
-        }
-        else{
+        } else {
             cardNumberProduct_Details.text = cardXXGen(cardNumber)
         }
-
 
         shippingAddress_productDetailsPage.setOnClickListener {
             startActivity(Intent(this, PaymentMethodActivity::class.java))
         }
 
-
         newProduct = arrayListOf()
-
 
         RecomRecView_ProductDetailsPage.layoutManager = LinearLayoutManager(
             this,
-            LinearLayoutManager.HORIZONTAL, false
+            LinearLayoutManager.HORIZONTAL,
+            false
         )
         RecomRecView_ProductDetailsPage.setHasFixedSize(true)
-        newProductAdapter = ProductAdapter(newProduct, this,"Category")
+        newProductAdapter = ProductAdapter(newProduct, this, "Category")
         RecomRecView_ProductDetailsPage.adapter = newProductAdapter
 
         setProductData()
@@ -140,9 +135,9 @@ class ProductDetailsActivity : AppCompatActivity() {
 //        loadRecentlyBoughtContacts()
 
         addToCart_ProductDetailsPage.setOnClickListener {
-
             val bottomSheetDialod = BottomSheetDialog(
-                this, R.style.BottomSheetDialogTheme
+                this,
+                R.style.BottomSheetDialogTheme
             )
 
             val bottomSheetView = LayoutInflater.from(applicationContext).inflate(
@@ -151,7 +146,6 @@ class ProductDetailsActivity : AppCompatActivity() {
             )
 
             bottomSheetView.findViewById<View>(R.id.addToCart_BottomSheet).setOnClickListener {
-
                 pPrice *= bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).text.toString()
                     .toInt()
                 addProductToBag()
@@ -159,16 +153,18 @@ class ProductDetailsActivity : AppCompatActivity() {
             }
 
             bottomSheetView.findViewById<LinearLayout>(R.id.minusLayout).setOnClickListener {
-                if(bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).text.toString()
-                        .toInt() > 1){
+                if (bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).text.toString()
+                    .toInt() > 1
+                ) {
                     qua--
                     bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).setText(qua.toString())
                 }
             }
 
             bottomSheetView.findViewById<LinearLayout>(R.id.plusLayout).setOnClickListener {
-                if(bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).text.toString()
-                        .toInt() < 10){
+                if (bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).text.toString()
+                    .toInt() < 10
+                ) {
                     qua++
                     bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).setText(qua.toString())
                 }
@@ -177,8 +173,8 @@ class ProductDetailsActivity : AppCompatActivity() {
             bottomSheetDialod.setContentView(bottomSheetView)
             bottomSheetDialod.show()
         }
-
     }
+
     // Replace this with real logic or backend-provided avatar
     private fun getRandomAvatarUrl(id: Int): String {
         val index = id % 10
@@ -215,8 +211,9 @@ class ProductDetailsActivity : AppCompatActivity() {
             "Some time ago"
         }
     }
+
 //    findViewById<LinearLayout>(R.id.recentBuyersContainer)
-    private fun loadRecentlyBoughtContacts(similarProducts: List<SimilarProduct>,container: LinearLayout,flag:Int) {
+    private fun loadRecentlyBoughtContacts(similarProducts: List<SimilarProduct>, container: LinearLayout, flag: Int) {
         val recentBuyers = similarProducts.map {
             val avatarUrl = getRandomAvatarUrl(it.productId)
             PurchaseDisplay(
@@ -280,21 +277,18 @@ class ProductDetailsActivity : AppCompatActivity() {
         container.addView(rowLayout)
 
         // 🟦 Click handler to show dialog
-       if(flag==1){
-           val section = findViewById<View>(R.id.recentlyBoughtSection)
-           val showDialog = { showBuyerDialog(recentBuyers) }
-           section.setOnClickListener { showDialog() }
-           container.setOnClickListener { showDialog() }
-       }else{
-           val section = findViewById<View>(R.id.recentlyBoughtSection)
-           val showDialog = { showSameBrandUserDialog(recentBuyers) }
-           section.setOnClickListener { showDialog() }
-           container.setOnClickListener { showDialog() }
-       }
+        if (flag == 1) {
+            val section = findViewById<View>(R.id.recentlyBoughtSection)
+            val showDialog = { showBuyerDialog(recentBuyers) }
+            section.setOnClickListener { showDialog() }
+            container.setOnClickListener { showDialog() }
+        } else {
+            val section = findViewById<View>(R.id.recentlyBoughtSection)
+            val showDialog = { showSameBrandUserDialog(recentBuyers) }
+            section.setOnClickListener { showDialog() }
+            container.setOnClickListener { showDialog() }
+        }
     }
-
-
-
 
     private fun showBuyerDialog(recentBuyers: List<PurchaseDisplay>) {
         val dialog = AlertDialog.Builder(this).create()
@@ -383,13 +377,7 @@ class ProductDetailsActivity : AppCompatActivity() {
         dialog.show()
     }
 
-
-
-
-
-
     private fun addProductToBag() {
-
         cartViewModel = ViewModelProviders.of(this).get(CartViewModel::class.java)
 
         cartViewModel.insert(ProductEntity(pName, qua, pPrice, productId, pImage))
@@ -397,8 +385,6 @@ class ProductDetailsActivity : AppCompatActivity() {
     }
 
     fun getJsonData(context: Context, fileName: String): String? {
-
-
         val jsonString: String
         try {
             jsonString = context.assets.open(fileName).bufferedReader().use { it.readText() }
@@ -413,21 +399,26 @@ class ProductDetailsActivity : AppCompatActivity() {
     private fun setProductData() {
         val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val authToken = sharedPref.getString("auth_token", null)
-        Log.d("TokenAuth",authToken.toString())
-        if(authToken != null){
+        Log.d("TokenAuth", authToken.toString())
+        if (authToken != null) {
             CoroutineScope(Dispatchers.IO).launch {
-                try{
-                    Log.d("TRYBLOCK",productId.toString())
-                    val response :ProductById = RetrofitInstance.apiInterface.getProductById(
-                        productId = productId,authToken="Bearer $authToken"
+                try {
+                    Log.d("TRYBLOCK", productId.toString())
+                    val response: ProductById = RetrofitInstance.apiInterface.getProductById(
+                        productId = productId,
+                        authToken = "Bearer $authToken"
                     )
                     withContext(Dispatchers.Main) {
                         val pr = response.product
                         sameBrand = response.same_brand
                         sameProduct = response.same_product
-                        Log.d("SameBrand",sameBrand.toString())
-                        loadRecentlyBoughtContacts(sameProduct,findViewById<LinearLayout>(R.id.recentBuyersContainer),1)
-                        loadRecentlyBoughtContacts(sameBrand,findViewById<LinearLayout>(R.id.sameBrandContainer),0)
+                        Log.d("SameBrand", sameBrand.toString())
+                        loadRecentlyBoughtContacts(
+                            sameProduct,
+                            findViewById<LinearLayout>(R.id.recentBuyersContainer),
+                            1
+                        )
+                        loadRecentlyBoughtContacts(sameBrand, findViewById<LinearLayout>(R.id.sameBrandContainer), 0)
                         Glide.with(applicationContext)
                             .load(pr.productImage)
                             .into(productImage_ProductDetailsPage)
@@ -446,11 +437,13 @@ class ProductDetailsActivity : AppCompatActivity() {
                         pPid = pr.productId
                         pImage = pr.productImage
                     }
-                } catch (e:Exception){
+                } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
 //                        loadingDialog.dismissDialog() // Dismiss dialog on error
                         Toast.makeText(
-                            applicationContext, "Error: ${e.localizedMessage}", Toast.LENGTH_LONG
+                            applicationContext,
+                            "Error: ${e.localizedMessage}",
+                            Toast.LENGTH_LONG
                         ).show()
                         e.printStackTrace() // Log the error for debugging
                     }
@@ -483,4 +476,3 @@ class ProductDetailsActivity : AppCompatActivity() {
         }
     }
 }
-

@@ -1,8 +1,7 @@
 package com.example.buynow.utils
 
-import org.junit.Assert.*
-
 import org.junit.After
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 
@@ -22,7 +21,6 @@ class CardTypeTest {
         assertEquals(result, CardType.MASTERCARD)
     }
 
-
     @Test
     fun `check visa card`() {
         val result = CardType.detect("4929107770069824")
@@ -35,7 +33,6 @@ class CardTypeTest {
         assertEquals(result, CardType.AMERICAN_EXPRESS)
     }
 
-
     @Test
     fun `check union pay card`() {
         val result = CardType.detect("6222022536058368")
@@ -47,7 +44,6 @@ class CardTypeTest {
         val result = CardType.detect("3010805991551163")
         assertEquals(result, CardType.DINERS_CLUB)
     }
-
 
     @Test
     fun `check discover card`() {
@@ -72,5 +68,4 @@ class CardTypeTest {
         val result = CardType.detect("3203600205660505")
         assertEquals(result, CardType.UNKNOWN)
     }
-
 }

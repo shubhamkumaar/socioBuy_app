@@ -13,7 +13,7 @@ import com.example.buynow.R
 import com.example.buynow.data.model.Product
 import com.example.buynow.presentation.activity.ProductDetailsActivity
 
-class ProductAdapter(private val products: List<Product>, private val context: Context,private val productFrom: String) :
+class ProductAdapter(private val products: List<Product>, private val context: Context, private val productFrom: String) :
 
     RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
@@ -35,13 +35,13 @@ class ProductAdapter(private val products: List<Product>, private val context: C
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         var TAG = "ADAPTER"
         val product = products[position]
-        Log.d(TAG,product.productName)
+        Log.d(TAG, product.productName)
         holder.productName.text = product.productName
         holder.productPrice.text = "₹${product.productPrice}"
 
         Glide.with(context)
             .load(product.productImage)
-            //.placeholder(R.drawable)
+            // .placeholder(R.drawable)
             .into(holder.productImage)
 
         // Reusable click logic
