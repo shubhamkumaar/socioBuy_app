@@ -1,45 +1,37 @@
 package com.example.buynow.presentation.activity
 
-
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
-
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.buynow.R
 import com.example.buynow.data.model.LoginData
-import com.example.buynow.data.model.User
 import com.example.buynow.data.model.SignUpRequest
 import com.example.buynow.utils.Extensions.toast
-
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-
 
 class SignUpActivity : AppCompatActivity() {
     private val TAG = "SignupActivity"
 
     private lateinit var fullName: EditText
     private lateinit var emailEt: EditText
-    private lateinit var phoneIn:EditText
+    private lateinit var phoneIn: EditText
     private lateinit var passEt: EditText
     private lateinit var CpassEt: EditText
 
-    lateinit var progressDialog:ProgressDialog
+    lateinit var progressDialog: ProgressDialog
 
     private val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
 
@@ -55,8 +47,6 @@ class SignUpActivity : AppCompatActivity() {
         CpassEt = findViewById(R.id.cPassEt_signUpPage)
         val signInTv = findViewById<TextView>(R.id.signInTv_signUpPage)
 
-
-
         progressDialog = ProgressDialog(this)
 
         textAutoCheck()
@@ -66,41 +56,55 @@ class SignUpActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-
         signUpBtn.setOnClickListener {
             checkInput()
-
         }
     }
 
     private fun textAutoCheck() {
-
         fullName.addTextChangedListener(object : TextWatcher {
 
             override fun afterTextChanged(s: Editable) {
-                if (fullName.text.isEmpty()){
+                if (fullName.text.isEmpty()) {
                     fullName.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
-
-                }
-                else if (fullName.text.length >= 4){
-                    fullName.setCompoundDrawablesWithIntrinsicBounds(null, null, ContextCompat.getDrawable(applicationContext,
-                        R.drawable.ic_check
-                    ), null)
+                } else if (fullName.text.length >= 4) {
+                    fullName.setCompoundDrawablesWithIntrinsicBounds(
+                        null,
+                        null,
+                        ContextCompat.getDrawable(
+                            applicationContext,
+                            R.drawable.ic_check
+                        ),
+                        null
+                    )
                 }
             }
 
-            override fun beforeTextChanged(s: CharSequence, start: Int,
-                                           count: Int, after: Int) {
-
+            override fun beforeTextChanged(
+                s: CharSequence,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
                 fullName.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
             }
 
-            override fun onTextChanged(s: CharSequence, start: Int,
-                                       before: Int, count: Int) {
-                if (count >= 4){
-                    fullName.setCompoundDrawablesWithIntrinsicBounds(null, null, ContextCompat.getDrawable(applicationContext,
-                        R.drawable.ic_check
-                    ), null)
+            override fun onTextChanged(
+                s: CharSequence,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
+                if (count >= 4) {
+                    fullName.setCompoundDrawablesWithIntrinsicBounds(
+                        null,
+                        null,
+                        ContextCompat.getDrawable(
+                            applicationContext,
+                            R.drawable.ic_check
+                        ),
+                        null
+                    )
                 }
             }
         })
@@ -108,29 +112,46 @@ class SignUpActivity : AppCompatActivity() {
         emailEt.addTextChangedListener(object : TextWatcher {
 
             override fun afterTextChanged(s: Editable) {
-                if (emailEt.text.isEmpty()){
+                if (emailEt.text.isEmpty()) {
                     emailEt.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
-
-                }
-                else if (emailEt.text.matches(emailPattern.toRegex())) {
-                    emailEt.setCompoundDrawablesWithIntrinsicBounds(null, null, ContextCompat.getDrawable(applicationContext,
-                        R.drawable.ic_check
-                    ), null)
+                } else if (emailEt.text.matches(emailPattern.toRegex())) {
+                    emailEt.setCompoundDrawablesWithIntrinsicBounds(
+                        null,
+                        null,
+                        ContextCompat.getDrawable(
+                            applicationContext,
+                            R.drawable.ic_check
+                        ),
+                        null
+                    )
                 }
             }
 
-            override fun beforeTextChanged(s: CharSequence, start: Int,
-                                           count: Int, after: Int) {
-
+            override fun beforeTextChanged(
+                s: CharSequence,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
                 emailEt.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
             }
 
-            override fun onTextChanged(s: CharSequence, start: Int,
-                                       before: Int, count: Int) {
+            override fun onTextChanged(
+                s: CharSequence,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
                 if (emailEt.text.matches(emailPattern.toRegex())) {
-                    emailEt.setCompoundDrawablesWithIntrinsicBounds(null, null, ContextCompat.getDrawable(applicationContext,
-                        R.drawable.ic_check
-                    ), null)
+                    emailEt.setCompoundDrawablesWithIntrinsicBounds(
+                        null,
+                        null,
+                        ContextCompat.getDrawable(
+                            applicationContext,
+                            R.drawable.ic_check
+                        ),
+                        null
+                    )
                 }
             }
         })
@@ -138,29 +159,46 @@ class SignUpActivity : AppCompatActivity() {
         passEt.addTextChangedListener(object : TextWatcher {
 
             override fun afterTextChanged(s: Editable) {
-                if (passEt.text.isEmpty()){
+                if (passEt.text.isEmpty()) {
                     passEt.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
-
-                }
-                else if (passEt.text.length > 5){
-                    passEt.setCompoundDrawablesWithIntrinsicBounds(null, null, ContextCompat.getDrawable(applicationContext,
-                        R.drawable.ic_check
-                    ), null)
+                } else if (passEt.text.length > 5) {
+                    passEt.setCompoundDrawablesWithIntrinsicBounds(
+                        null,
+                        null,
+                        ContextCompat.getDrawable(
+                            applicationContext,
+                            R.drawable.ic_check
+                        ),
+                        null
+                    )
                 }
             }
 
-            override fun beforeTextChanged(s: CharSequence, start: Int,
-                                           count: Int, after: Int) {
-
+            override fun beforeTextChanged(
+                s: CharSequence,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
                 passEt.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
             }
 
-            override fun onTextChanged(s: CharSequence, start: Int,
-                                       before: Int, count: Int) {
-                if (count > 5){
-                    passEt.setCompoundDrawablesWithIntrinsicBounds(null, null, ContextCompat.getDrawable(applicationContext,
-                        R.drawable.ic_check
-                    ), null)
+            override fun onTextChanged(
+                s: CharSequence,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
+                if (count > 5) {
+                    passEt.setCompoundDrawablesWithIntrinsicBounds(
+                        null,
+                        null,
+                        ContextCompat.getDrawable(
+                            applicationContext,
+                            R.drawable.ic_check
+                        ),
+                        null
+                    )
                 }
             }
         })
@@ -168,41 +206,57 @@ class SignUpActivity : AppCompatActivity() {
         CpassEt.addTextChangedListener(object : TextWatcher {
 
             override fun afterTextChanged(s: Editable) {
-                if (CpassEt.text.isEmpty()){
+                if (CpassEt.text.isEmpty()) {
                     CpassEt.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
-
-                }
-                else if (CpassEt.text.toString() == passEt.text.toString()){
-                    CpassEt.setCompoundDrawablesWithIntrinsicBounds(null, null, ContextCompat.getDrawable(applicationContext,
-                        R.drawable.ic_check
-                    ), null)
+                } else if (CpassEt.text.toString() == passEt.text.toString()) {
+                    CpassEt.setCompoundDrawablesWithIntrinsicBounds(
+                        null,
+                        null,
+                        ContextCompat.getDrawable(
+                            applicationContext,
+                            R.drawable.ic_check
+                        ),
+                        null
+                    )
                 }
             }
 
-            override fun beforeTextChanged(s: CharSequence, start: Int,
-                                           count: Int, after: Int) {
-
+            override fun beforeTextChanged(
+                s: CharSequence,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
                 CpassEt.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
             }
 
-            override fun onTextChanged(s: CharSequence, start: Int,
-                                       before: Int, count: Int) {
-                if (CpassEt.text.toString() == passEt.text.toString()){
-                    CpassEt.setCompoundDrawablesWithIntrinsicBounds(null, null, ContextCompat.getDrawable(applicationContext,
-                        R.drawable.ic_check
-                    ), null)
+            override fun onTextChanged(
+                s: CharSequence,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
+                if (CpassEt.text.toString() == passEt.text.toString()) {
+                    CpassEt.setCompoundDrawablesWithIntrinsicBounds(
+                        null,
+                        null,
+                        ContextCompat.getDrawable(
+                            applicationContext,
+                            R.drawable.ic_check
+                        ),
+                        null
+                    )
                 }
             }
         })
-
     }
 
     private fun checkInput() {
-        if (fullName.text.isEmpty()){
+        if (fullName.text.isEmpty()) {
             toast("Name can't empty!")
             return
         }
-        if (emailEt.text.isEmpty()){
+        if (emailEt.text.isEmpty()) {
             toast("Email can't empty!")
             return
         }
@@ -211,38 +265,36 @@ class SignUpActivity : AppCompatActivity() {
             toast("Enter Valid Email")
             return
         }
-        if(passEt.text.isEmpty()){
+        if (passEt.text.isEmpty()) {
             toast("Password can't empty!")
             return
         }
-        if (passEt.text.toString() != CpassEt.text.toString()){
+        if (passEt.text.toString() != CpassEt.text.toString()) {
             toast("Password not Match")
             return
         }
 
         signIn()
-
-
     }
 
-
-
     private fun signIn() {
-
         progressDialog.setTitle("Please Wait")
         progressDialog.setMessage("Creating Account")
         progressDialog.show()
 
         val emailV: String = emailEt.text.toString()
         val passV: String = passEt.text.toString()
-        val phone:String = phoneIn.text.toString().trim()
-        val fullname : String = fullName.text.toString()
+        val phone: String = phoneIn.text.toString().trim()
+        val fullname: String = fullName.text.toString()
 
-        CoroutineScope(Dispatchers.IO).launch{
-            try{
-                val response :LoginData = RetrofitInstance.apiInterface.register(
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response: LoginData = RetrofitInstance.apiInterface.register(
                     SignUpRequest(
-                         fullname,emailV,phone, passV
+                        fullname,
+                        emailV,
+                        phone,
+                        passV
                     )
                 )
                 withContext(Dispatchers.Main) {
@@ -254,9 +306,9 @@ class SignUpActivity : AppCompatActivity() {
                             val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
                             with(sharedPref.edit()) {
                                 putString("auth_token", token)
-                                putString("user_email",response.email)
-                                putString("user_name",response.name)
-                                putString("user_phone",response.phone)
+                                putString("user_email", response.email)
+                                putString("user_name", response.name)
+                                putString("user_phone", response.phone)
                                 putLong(
                                     "auth_token_timestamp",
                                     System.currentTimeMillis()
@@ -275,16 +327,17 @@ class SignUpActivity : AppCompatActivity() {
                             .show()
                     }
                 }
-
-            }catch (e: Exception) {
+            } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     progressDialog.dismiss() // Dismiss dialog on error
                     Toast.makeText(
-                        applicationContext, "Error: ${e.localizedMessage}", Toast.LENGTH_LONG
+                        applicationContext,
+                        "Error: ${e.localizedMessage}",
+                        Toast.LENGTH_LONG
                     ).show()
                     e.printStackTrace() // Log the error for debugging
                 }
-        }
+            }
 //        firebaseAuth.createUserWithEmailAndPassword(emailV,passV)
 //
 //                .addOnCompleteListener { task ->
@@ -304,8 +357,7 @@ class SignUpActivity : AppCompatActivity() {
 //                        toast("failed to Authenticate !")
 //                    }
 //                }
-
-    }
+        }
 
 //    private fun sendEmailVerification() {
 //        progressDialog.setMessage("Send Verification")
@@ -326,8 +378,4 @@ class SignUpActivity : AppCompatActivity() {
 //                }
 //        }
     }
-
-
 }
-
-

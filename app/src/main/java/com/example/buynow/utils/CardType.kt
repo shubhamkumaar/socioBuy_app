@@ -28,8 +28,11 @@ enum class CardType {
             for (cardType in values()) {
                 if (null == cardType.pattern) continue
                 if (cardNumber?.let {
-                        cardType.pattern!!.matcher(it).matches()
-                    } == true) return cardType
+                    cardType.pattern!!.matcher(it).matches()
+                } == true
+                ) {
+                    return cardType
+                }
             }
             return UNKNOWN
         }

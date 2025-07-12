@@ -9,33 +9,27 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.buynow.R
 import com.example.buynow.data.local.room.Card.CardEntity
 
-class CardAdapter(private val ctx: Context, val listener: CarDItemClickAdapter) :RecyclerView.Adapter<CardAdapter.cardViewHolder>() {
+class CardAdapter(private val ctx: Context, val listener: CarDItemClickAdapter) : RecyclerView.Adapter<CardAdapter.cardViewHolder>() {
 
     private val cardList: ArrayList<CardEntity> = arrayListOf()
 
-
-    class cardViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
-
+    class cardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         val cardNumber: TextView = itemView.findViewById(R.id.cardNumber_singleCard)
         val cardHName: TextView = itemView.findViewById(R.id.cardHolderName_singleCard)
         val exp: TextView = itemView.findViewById(R.id.expiryDate_singleCard)
-        val layD : LinearLayout = itemView.findViewById(R.id.useDefault_Layout)
-        val checkbox : CheckBox = itemView.findViewById(R.id.checkBox_SingleCard)
-        val cardImage:ImageView = itemView.findViewById(R.id.cardBrandImage_singleCard)
-
+        val layD: LinearLayout = itemView.findViewById(R.id.useDefault_Layout)
+        val checkbox: CheckBox = itemView.findViewById(R.id.checkBox_SingleCard)
+        val cardImage: ImageView = itemView.findViewById(R.id.cardBrandImage_singleCard)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): cardViewHolder {
-
-        val cardView = LayoutInflater.from(ctx).inflate(R.layout.single_card,parent,false)
+        val cardView = LayoutInflater.from(ctx).inflate(R.layout.single_card, parent, false)
         return cardViewHolder(cardView)
     }
 
     override fun onBindViewHolder(holder: cardViewHolder, position: Int) {
         val cardItem: CardEntity = cardList[position]
-
-
 
         when (cardItem.brandC) {
             "MASTERCARD" -> holder.cardImage.setImageResource(R.drawable.ic_mastercard)
@@ -54,15 +48,13 @@ class CardAdapter(private val ctx: Context, val listener: CarDItemClickAdapter) 
         holder.cardHName.text = cardItem.nameCH.toString()
         holder.exp.text = cardItem.exp
         holder.cardNumber.text = cardItem.number
-        if(cardList.size > 1){
+        if (cardList.size > 1) {
             holder.layD.visibility = View.VISIBLE
-
-        }
-        else{
+        } else {
             holder.layD.visibility = View.GONE
         }
 
-       // holder.checkbox.setOnClickListener {
+        // holder.checkbox.setOnClickListener {
 
 //            val editor:SharedPreferences.Editor =  defaultCard.edit()
 //            if(holder.checkbox.isChecked){
@@ -80,23 +72,21 @@ class CardAdapter(private val ctx: Context, val listener: CarDItemClickAdapter) 
 //            editor.apply()
 //            editor.commit()
 
-      //  }
-
+        //  }
     }
 
     override fun getItemCount(): Int {
         return cardList.size
     }
 
-    fun updateList(newList: List<CardEntity>){
+    fun updateList(newList: List<CardEntity>) {
         cardList.clear()
         cardList.addAll(newList)
         notifyDataSetChanged()
     }
 }
 
-
-interface CarDItemClickAdapter{
+interface CarDItemClickAdapter {
     fun onItemDeleteClick(cardEntity: CardEntity)
     fun onItemUpdateClick(cardEntity: CardEntity)
 }

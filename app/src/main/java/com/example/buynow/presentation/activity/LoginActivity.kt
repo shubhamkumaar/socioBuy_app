@@ -16,14 +16,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.buynow.R
 import com.example.buynow.data.model.LoginData
-import com.example.buynow.data.model.LoginRequest
 import com.example.buynow.presentation.LoadingDialog
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.concurrent.TimeUnit
-import kotlin.math.log
 
 class LoginActivity : AppCompatActivity() {
 
@@ -53,7 +51,6 @@ class LoginActivity : AppCompatActivity() {
         Log.d(TAG, "onCreate: Retrieved authToken: $authToken")
         Log.d(TAG, "onCreate: Retrieved tokenTimestamp: $tokenTimestamp")
 
-
         if (authToken != null && tokenTimestamp != 0L) {
             val currentTime = System.currentTimeMillis()
             val elapsedTime = currentTime - tokenTimestamp
@@ -61,7 +58,6 @@ class LoginActivity : AppCompatActivity() {
             Log.d(TAG, "onCreate: Current time: $currentTime")
             Log.d(TAG, "onCreate: Elapsed time since token issue: $elapsedTime ms")
             Log.d(TAG, "onCreate: Token expiration set to: $TOKEN_EXPIRATION_MILLIS ms")
-
 
             if (elapsedTime < TOKEN_EXPIRATION_MILLIS) {
                 // Token is still valid (client-side check), navigate directly to HomeActivity
@@ -96,8 +92,6 @@ class LoginActivity : AppCompatActivity() {
         emailError = findViewById(R.id.emailError)
         passwordError = findViewById(R.id.passwordError)
 
-
-
         textAutoCheck()
 
         loadingDialog = LoadingDialog(this)
@@ -110,42 +104,52 @@ class LoginActivity : AppCompatActivity() {
         signInBtn.setOnClickListener {
             checkInput()
         }
-
     }
 
     private fun textAutoCheck() {
-
         emailEt.addTextChangedListener(object : TextWatcher {
 
             override fun afterTextChanged(s: Editable) {
                 if (emailEt.text.isEmpty()) {
                     emailEt.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
-
                 } else if (Patterns.EMAIL_ADDRESS.matcher(emailEt.text).matches()) {
                     emailEt.setCompoundDrawablesWithIntrinsicBounds(
-                        null, null, ContextCompat.getDrawable(
-                            applicationContext, R.drawable.ic_check
-                        ), null
+                        null,
+                        null,
+                        ContextCompat.getDrawable(
+                            applicationContext,
+                            R.drawable.ic_check
+                        ),
+                        null
                     )
                     emailError.visibility = View.GONE
                 }
             }
 
             override fun beforeTextChanged(
-                s: CharSequence, start: Int, count: Int, after: Int
+                s: CharSequence,
+                start: Int,
+                count: Int,
+                after: Int
             ) {
-
                 emailEt.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
             }
 
             override fun onTextChanged(
-                s: CharSequence, start: Int, before: Int, count: Int
+                s: CharSequence,
+                start: Int,
+                before: Int,
+                count: Int
             ) {
                 if (Patterns.EMAIL_ADDRESS.matcher(emailEt.text).matches()) {
                     emailEt.setCompoundDrawablesWithIntrinsicBounds(
-                        null, null, ContextCompat.getDrawable(
-                            applicationContext, R.drawable.ic_check
-                        ), null
+                        null,
+                        null,
+                        ContextCompat.getDrawable(
+                            applicationContext,
+                            R.drawable.ic_check
+                        ),
+                        null
                     )
                     emailError.visibility = View.GONE
                 }
@@ -157,43 +161,51 @@ class LoginActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable) {
                 if (passEt.text.isEmpty()) {
                     passEt.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
-
                 } else if (passEt.text.length > 4) {
                     passEt.setCompoundDrawablesWithIntrinsicBounds(
-                        null, null, ContextCompat.getDrawable(
-                            applicationContext, R.drawable.ic_check
-                        ), null
+                        null,
+                        null,
+                        ContextCompat.getDrawable(
+                            applicationContext,
+                            R.drawable.ic_check
+                        ),
+                        null
                     )
-
                 }
             }
 
             override fun beforeTextChanged(
-                s: CharSequence, start: Int, count: Int, after: Int
+                s: CharSequence,
+                start: Int,
+                count: Int,
+                after: Int
             ) {
-
                 passEt.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
             }
 
             override fun onTextChanged(
-                s: CharSequence, start: Int, before: Int, count: Int
+                s: CharSequence,
+                start: Int,
+                before: Int,
+                count: Int
             ) {
                 passwordError.visibility = View.GONE
                 if (count > 4) {
                     passEt.setCompoundDrawablesWithIntrinsicBounds(
-                        null, null, ContextCompat.getDrawable(
-                            applicationContext, R.drawable.ic_check
-                        ), null
+                        null,
+                        null,
+                        ContextCompat.getDrawable(
+                            applicationContext,
+                            R.drawable.ic_check
+                        ),
+                        null
                     )
-
                 }
             }
         })
-
     }
 
     private fun checkInput() {
-
         if (emailEt.text.isEmpty()) {
             emailError.visibility = View.VISIBLE
             emailError.text = "Email Can't be Empty"
@@ -218,7 +230,6 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun signInUser() {
-
         loadingDialog.startLoadingDialog()
         signInEmail = emailEt.text.toString().trim()
         signInPassword = passEt.text.toString().trim()
@@ -227,7 +238,8 @@ class LoginActivity : AppCompatActivity() {
             try {
                 // Make the API call using RetrofitInstance and ApiInterface
                 val response: LoginData = RetrofitInstance.apiInterface.loginUser(
-                    username = signInEmail, password = signInPassword
+                    username = signInEmail,
+                    password = signInPassword
                 )
                 Log.d(TAG, response.toString())
                 withContext(Dispatchers.Main) {
@@ -268,7 +280,9 @@ class LoginActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     loadingDialog.dismissDialog() // Dismiss dialog on error
                     Toast.makeText(
-                        applicationContext, "Error: ${e.localizedMessage}", Toast.LENGTH_LONG
+                        applicationContext,
+                        "Error: ${e.localizedMessage}",
+                        Toast.LENGTH_LONG
                     ).show()
                     e.printStackTrace() // Log the error for debugging
                 }

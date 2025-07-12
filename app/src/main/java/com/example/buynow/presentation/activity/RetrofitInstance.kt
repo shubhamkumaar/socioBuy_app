@@ -1,10 +1,9 @@
 package com.example.buynow.presentation.activity
 
+import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
-
 
 object RetrofitInstance {
     private const val BASE_URL = "https://sociobuy.shub0.me"
@@ -20,7 +19,6 @@ object RetrofitInstance {
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClient)
             .build()
-
     }
 
     val apiInterface by lazy {

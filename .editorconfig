@@ -1,9 +1,38 @@
+# Top-most EditorConfig file
 root = true
 
+# Applies to all files
 [*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
 max_line_length = 120
+
+# Applies to Kotlin files
+[*.kt]
+indent_size = 4
+max_blank_lines = 0
 insert_final_newline = true
 trim_trailing_whitespace = true
+continuation_indent_size = 4
 
-[*.kt]
-max_blank_lines = 0
+# Applies to XML files (like layout or manifest)
+[*.xml]
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# Applies to Gradle files
+[*.gradle]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# Applies to Markdown and other docs
+[*.md]
+max_line_length = off
+trim_trailing_whitespace = false
+insert_final_newline = true

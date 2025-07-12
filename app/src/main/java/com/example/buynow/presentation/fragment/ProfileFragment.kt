@@ -1,61 +1,53 @@
 package com.example.buynow.presentation.fragment
 
+import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.net.http.HttpException
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.provider.MediaStore
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
 import com.example.buynow.R
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import android.net.http.HttpException
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
-
-
-import com.example.buynow.utils.FirebaseUtils.storageReference
 import com.example.buynow.data.local.room.Card.CardViewModel
 import com.example.buynow.data.model.ImportContactResponse
 import com.example.buynow.presentation.activity.PaymentMethodActivity
 import com.example.buynow.presentation.activity.RetrofitInstance
 import com.example.buynow.presentation.activity.SettingsActivity
 import com.example.buynow.presentation.activity.ShipingAddressActivity
+import com.example.buynow.utils.FirebaseUtils.storageReference
 import com.google.android.gms.tasks.Continuation
-
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-
 import com.google.firebase.storage.UploadTask
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonObject
 import de.hdodenhof.circleimageview.CircleImageView
+import java.io.IOException
+import java.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import java.io.IOException
-import java.util.*
-
 
 data class Contact(val name: String, val number: String)
 data class ImportContactRequest(
@@ -70,9 +62,9 @@ class ProfileFragment : Fragment() {
     private val PICK_IMAGE_REQUEST = 71
     private var filePath: Uri? = null
 
-    lateinit var uploadImage_profileFrag:Button
-    lateinit var profileName_profileFrag:TextView
-    lateinit var profileEmail_profileFrag:TextView
+    lateinit var uploadImage_profileFrag: Button
+    lateinit var profileName_profileFrag: TextView
+    lateinit var profileEmail_profileFrag: TextView
 
     private lateinit var cardViewModel: CardViewModel
 
@@ -81,14 +73,15 @@ class ProfileFragment : Fragment() {
 
     var cards: Int = 0
 
-    lateinit var linearLayout2:LinearLayout
-    lateinit var linearLayout3:LinearLayout
-    lateinit var linearLayout4:LinearLayout
+    lateinit var linearLayout2: LinearLayout
+    lateinit var linearLayout3: LinearLayout
+    lateinit var linearLayout4: LinearLayout
 
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var pickContactLauncher: ActivityResultLauncher<Intent>
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
@@ -105,21 +98,22 @@ class ProfileFragment : Fragment() {
         linearLayout4 = view.findViewById(R.id.linearLayout4)
         val shippingAddressCard_ProfilePage = view.findViewById<CardView>(R.id.shippingAddressCard_ProfilePage)
         val paymentMethod_ProfilePage = view.findViewById<CardView>(R.id.paymentMethod_ProfilePage)
-        val cardsNumber_profileFrag:TextView = view.findViewById(R.id.cardsNumber_profileFrag)
+        val cardsNumber_profileFrag: TextView = view.findViewById(R.id.cardsNumber_profileFrag)
         val importContact = view.findViewById<CardView>(R.id.import_contact)
 
         cardViewModel = ViewModelProviders.of(this).get(CardViewModel::class.java)
 
-        cardViewModel.allCards.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
-            cards = it.size
-        })
+        cardViewModel.allCards.observe(
+            viewLifecycleOwner,
+            androidx.lifecycle.Observer {
+                cards = it.size
+            }
+        )
 
-        if(cards == 0){
+        if (cards == 0) {
             cardsNumber_profileFrag.text = "You Have no Cards."
-        }
-        else{
-
-        cardsNumber_profileFrag.text = "You Have "+ cards.toString() + " Cards."
+        } else {
+            cardsNumber_profileFrag.text = "You Have " + cards.toString() + " Cards."
         }
 
         shippingAddressCard_ProfilePage.setOnClickListener {
@@ -131,8 +125,6 @@ class ProfileFragment : Fragment() {
         }
 
         hideLayout()
-
-
 
         uploadImage_profileFrag.visibility = View.GONE
 
@@ -151,7 +143,7 @@ class ProfileFragment : Fragment() {
         }
         importContact.setOnClickListener {
             Log.d(TAG, "Import Contact button clicked.")
-            checkContactPermissionAndReadAllContacts()// Using Log.d for debug messages
+            checkContactPermissionAndReadAllContacts() // Using Log.d for debug messages
         }
 
         getUserData()
@@ -166,23 +158,22 @@ class ProfileFragment : Fragment() {
         }
 
         profileImage_profileFrag.setOnClickListener {
+            val popupMenu: PopupMenu = PopupMenu(context, profileImage_profileFrag)
 
-            val popupMenu: PopupMenu = PopupMenu(context,profileImage_profileFrag)
-
-            popupMenu.menuInflater.inflate(R.menu.profile_photo_storage,popupMenu.menu)
-            popupMenu.setOnMenuItemClickListener(PopupMenu.OnMenuItemClickListener { item ->
-                when(item.itemId) {
-                    R.id.galleryMenu ->
-                        launchGallery()
-                    R.id.cameraMenu ->
-                        uploadImage()
-
+            popupMenu.menuInflater.inflate(R.menu.profile_photo_storage, popupMenu.menu)
+            popupMenu.setOnMenuItemClickListener(
+                PopupMenu.OnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.galleryMenu ->
+                            launchGallery()
+                        R.id.cameraMenu ->
+                            uploadImage()
+                    }
+                    true
                 }
-                true
-            })
+            )
             popupMenu.show()
-
-    }
+        }
 
         return view
     }
@@ -199,7 +190,11 @@ class ProfileFragment : Fragment() {
             shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS) -> {
                 // Explain why the app needs this permission
                 Log.i(TAG, "Showing rationale for READ_CONTACTS permission.")
-                Toast.makeText(requireContext(), "This app needs contact permission to import all contacts.", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(),
+                    "This app needs contact permission to import all contacts.",
+                    Toast.LENGTH_LONG
+                ).show()
                 requestPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
             }
             else -> {
@@ -210,7 +205,7 @@ class ProfileFragment : Fragment() {
         }
     }
     private fun readAllContacts() {
-        Toast.makeText(requireContext(),"Reading Contacts",Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Reading Contacts", Toast.LENGTH_SHORT).show()
         val contactsList = mutableListOf<Pair<String, String>>() // To store name and number
         var lastContactName: String? = null
         var lastContactNumber: String? = null
@@ -266,11 +261,11 @@ class ProfileFragment : Fragment() {
             }
         }
         cursor?.close()
-        if(contactsList.size>0){
+        if (contactsList.size > 0) {
             val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            val token:String? = sharedPref.getString("auth_token","N/A")
-            if(token == "N/A" || token == null){
-                Toast.makeText(requireContext(),"Error Uploading Contacts",Toast.LENGTH_SHORT).show()
+            val token: String? = sharedPref.getString("auth_token", "N/A")
+            if (token == "N/A" || token == null) {
+                Toast.makeText(requireContext(), "Error Uploading Contacts", Toast.LENGTH_SHORT).show()
                 return
             }
 
@@ -292,12 +287,15 @@ class ProfileFragment : Fragment() {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "Contacts imported: ${response.message}", Toast.LENGTH_SHORT).show()
                     }
-
                 } catch (e: retrofit2.HttpException) {
                     val errorBody = e.response()?.errorBody()?.string()
                     val errorCode = e.code()
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "Import failed ($errorCode): ${errorBody ?: e.message()}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            requireContext(),
+                            "Import failed ($errorCode): ${errorBody ?: e.message()}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 } catch (e: IOException) {
                     withContext(Dispatchers.Main) {
@@ -305,7 +303,11 @@ class ProfileFragment : Fragment() {
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "An unexpected error occurred: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            requireContext(),
+                            "An unexpected error occurred: ${e.localizedMessage}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             }
@@ -316,7 +318,7 @@ class ProfileFragment : Fragment() {
         pickContactLauncher.launch(intent)
     }
 
-    private fun hideLayout(){
+    private fun hideLayout() {
         animationView.playAnimation()
         animationView.loop(true)
         linearLayout2.visibility = View.GONE
@@ -324,7 +326,7 @@ class ProfileFragment : Fragment() {
         linearLayout4.visibility = View.GONE
         animationView.visibility = View.VISIBLE
     }
-    private fun showLayout(){
+    private fun showLayout() {
         animationView.pauseAnimation()
         animationView.visibility = View.GONE
         linearLayout2.visibility = View.VISIBLE
@@ -334,7 +336,6 @@ class ProfileFragment : Fragment() {
 
     private fun getUserData() = CoroutineScope(Dispatchers.IO).launch {
         try {
-
             val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
 
             // Retrieve user data from SharedPreferences
@@ -379,36 +380,32 @@ class ProfileFragment : Fragment() {
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST)
     }
 
-    private fun uploadImage(){
-
-        if(filePath != null){
-
+    private fun uploadImage() {
+        if (filePath != null) {
             val ref = storageReference.child("profile_Image/" + UUID.randomUUID().toString())
             val uploadTask = ref?.putFile(filePath!!)
 
-            val urlTask = uploadTask?.continueWithTask(Continuation<UploadTask.TaskSnapshot, Task<Uri>> { task ->
-                if (!task.isSuccessful) {
-                    task.exception?.let {
-                        throw it
+            val urlTask = uploadTask?.continueWithTask(
+                Continuation<UploadTask.TaskSnapshot, Task<Uri>> { task ->
+                    if (!task.isSuccessful) {
+                        task.exception?.let {
+                            throw it
+                        }
                     }
+                    return@Continuation ref.downloadUrl
                 }
-                return@Continuation ref.downloadUrl
-            })?.addOnCompleteListener { task ->
+            )?.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val downloadUri = task.result
                     addUploadRecordToDb(downloadUri.toString())
 
                     // show save...
-
-
                 } else {
                     // Handle failures
                 }
-            }?.addOnFailureListener{
-
+            }?.addOnFailureListener {
             }
-        }else{
-
+        } else {
             Toast.makeText(context, "Please Upload an Image", Toast.LENGTH_SHORT).show()
         }
     }
@@ -417,7 +414,7 @@ class ProfileFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
-            if(data == null || data.data == null){
+            if (data == null || data.data == null) {
                 return
             }
 
@@ -433,21 +430,17 @@ class ProfileFragment : Fragment() {
     }
 
     private fun addUploadRecordToDb(uri: String) = CoroutineScope(Dispatchers.IO).launch {
-
         try {
-
             userCollectionRef.document(firebaseAuth.uid.toString())
-                .update("userImage" , uri ).await()
+                .update("userImage", uri).await()
 
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
                 Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
             }
-
-        }catch (e:Exception){
-            withContext(Dispatchers.Main){
-                Toast.makeText(context, ""+e.message.toString(), Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "" + e.message.toString(), Toast.LENGTH_SHORT).show()
             }
         }
     }
-
 }

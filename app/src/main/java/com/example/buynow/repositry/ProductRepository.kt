@@ -35,7 +35,6 @@ class ProductRepository(private val context: Context) {
                         productData.value = Pair(categories, cover)
                         Log.d("ProductRepository", "Product fetch successful.")
                         Log.d("API_DATA", "Raw Response: ${response.body()}")
-
                     } else {
                         Log.e("ProductRepository", "Error: ${response.code()} ${response.message()}")
                     }

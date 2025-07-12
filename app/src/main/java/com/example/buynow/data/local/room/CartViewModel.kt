@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class CartViewModel(application: Application) : AndroidViewModel(application){
+class CartViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: CartRepo
     val allproducts: LiveData<List<ProductEntity>>

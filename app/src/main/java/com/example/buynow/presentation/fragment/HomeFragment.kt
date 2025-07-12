@@ -25,7 +25,8 @@ class HomeFragment : Fragment() {
     private var TAG = "HomeFragment"
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
@@ -77,7 +78,6 @@ class HomeFragment : Fragment() {
             showLayout()
         }
 
-
         return view
     }
 
@@ -107,14 +107,11 @@ class HomeFragment : Fragment() {
         titleView.text = title
         recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         try {
-            recyclerView.adapter = ProductAdapter(products ?: emptyList(), requireContext(),"Category")
+            recyclerView.adapter = ProductAdapter(products ?: emptyList(), requireContext(), "Category")
         } catch (e: Exception) {
             Log.e(TAG, "Adapter exception in '$title':", e)
         }
     }
-
-
-
 
     private fun hideLayout() {
         animationView.playAnimation()

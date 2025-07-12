@@ -6,9 +6,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import com.example.buynow.presentation.LoadingDialog
-
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,58 +14,53 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import retrofit2.Call
-
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-
 import androidx.lifecycle.ViewModelProviders
-
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
-import com.example.buynow.presentation.adapter.CartAdapter
-import com.example.buynow.presentation.adapter.CartItemClickAdapter
-
 import com.example.buynow.R
-
-
 import com.example.buynow.data.local.room.CartViewModel
 import com.example.buynow.data.local.room.ProductEntity
 import com.example.buynow.data.model.AiRequest
 import com.example.buynow.data.model.AiResponse
+import com.example.buynow.presentation.LoadingDialog
 import com.example.buynow.presentation.activity.RetrofitInstance
+import com.example.buynow.presentation.adapter.CartAdapter
+import com.example.buynow.presentation.adapter.CartItemClickAdapter
 import org.json.JSONArray
+import retrofit2.Call
 
 class BagFragment : Fragment(), CartItemClickAdapter {
     lateinit var loadingDialog: LoadingDialog
 
-    lateinit var cartRecView:RecyclerView
+    lateinit var cartRecView: RecyclerView
     lateinit var cartAdapter: CartAdapter
     lateinit var animationView: LottieAnimationView
-    lateinit var totalPriceBagFrag:TextView
+    lateinit var totalPriceBagFrag: TextView
     lateinit var Item: ArrayList<ProductEntity>
-     var sum:Double = 0.0
-
+    var sum: Double = 0.0
 
     private lateinit var cartViewModel: CartViewModel
     private var dialog: AlertDialog? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         val view = inflater.inflate(R.layout.fragment_bag, container, false)
         loadingDialog = LoadingDialog(requireActivity())
 
         cartRecView = view.findViewById(R.id.cartRecView)
         animationView = view.findViewById(R.id.animationViewCartPage)
         totalPriceBagFrag = view.findViewById(R.id.totalPriceBagFrag)
-        val bottomCartLayout:LinearLayout = view.findViewById(R.id.bottomCartLayout)
-        val emptyBagMsgLayout:LinearLayout = view.findViewById(R.id.emptyBagMsgLayout)
-        val MybagText:TextView = view.findViewById(R.id.MybagText)
-        val aiSuggestion:Button = view.findViewById<Button>(R.id.ai_suggestion_button)
-        val checkoutBtn:Button = view.findViewById<Button>(R.id.checkOut_BagPage)
+        val bottomCartLayout: LinearLayout = view.findViewById(R.id.bottomCartLayout)
+        val emptyBagMsgLayout: LinearLayout = view.findViewById(R.id.emptyBagMsgLayout)
+        val MybagText: TextView = view.findViewById(R.id.MybagText)
+        val aiSuggestion: Button = view.findViewById<Button>(R.id.ai_suggestion_button)
+        val checkoutBtn: Button = view.findViewById<Button>(R.id.checkOut_BagPage)
         Item = arrayListOf()
         val sparkleAnimation = view.findViewById<LottieAnimationView>(R.id.lottie_sparkle)
 
@@ -78,38 +70,36 @@ class BagFragment : Fragment(), CartItemClickAdapter {
         MybagText.visibility = View.GONE
         emptyBagMsgLayout.visibility = View.VISIBLE
 
-
         cartRecView.layoutManager = LinearLayoutManager(context)
-        cartAdapter = CartAdapter(activity as Context, this )
+        cartAdapter = CartAdapter(activity as Context, this)
         cartRecView.adapter = cartAdapter
-
 
         cartViewModel = ViewModelProviders.of(this).get(CartViewModel::class.java)
 
-        cartViewModel.allproducts.observe(viewLifecycleOwner, Observer {List ->
-            List?.let {
-                cartAdapter.updateList(it)
-                Item.clear()
-                sum = 0.0
-                Item.addAll(it)
-            }
+        cartViewModel.allproducts.observe(
+            viewLifecycleOwner,
+            Observer { List ->
+                List?.let {
+                    cartAdapter.updateList(it)
+                    Item.clear()
+                    sum = 0.0
+                    Item.addAll(it)
+                }
 
-            if (List.size == 0){
-                animationView.playAnimation()
-                animationView.loop(true)
-                bottomCartLayout.visibility = View.GONE
-                MybagText.visibility = View.GONE
-                aiSuggestion.visibility=View.GONE
-                emptyBagMsgLayout.visibility = View.VISIBLE
-
-            }
-            else{
-                emptyBagMsgLayout.visibility = View.GONE
-                bottomCartLayout.visibility = View.VISIBLE
-                aiSuggestion.visibility=View.VISIBLE
-                MybagText.visibility = View.VISIBLE
-                animationView.pauseAnimation()
-            }
+                if (List.size == 0) {
+                    animationView.playAnimation()
+                    animationView.loop(true)
+                    bottomCartLayout.visibility = View.GONE
+                    MybagText.visibility = View.GONE
+                    aiSuggestion.visibility = View.GONE
+                    emptyBagMsgLayout.visibility = View.VISIBLE
+                } else {
+                    emptyBagMsgLayout.visibility = View.GONE
+                    bottomCartLayout.visibility = View.VISIBLE
+                    aiSuggestion.visibility = View.VISIBLE
+                    MybagText.visibility = View.VISIBLE
+                    animationView.pauseAnimation()
+                }
 
             sum = 0.0
             Item.forEach {
@@ -138,7 +128,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
             }
             sparkleAnimation.visibility = View.VISIBLE
             sparkleAnimation.playAnimation()
-            //loadingDialog?.startLoadingDialog()
+            // loadingDialog?.startLoadingDialog()
 
             Log.d("AI_REQUEST", "Sending productIds: $productIds")
 
@@ -147,7 +137,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
             RetrofitInstance.apiInterface.getAiRecommendation("Bearer $authToken", request)
                 .enqueue(object : retrofit2.Callback<AiResponse> {
                     override fun onResponse(call: Call<AiResponse>, response: retrofit2.Response<AiResponse>) {
-                        //loadingDialog?.dismissDialog()
+                        // loadingDialog?.dismissDialog()
                         sparkleAnimation.pauseAnimation()
                         sparkleAnimation.visibility = View.GONE
                         if (!isAdded) return
@@ -184,16 +174,12 @@ class BagFragment : Fragment(), CartItemClickAdapter {
 //                                            showAiDialog(productName, message)
 //                                        }, i * 500L) // 500ms delay between dialogs
                                         suggestions.add(Pair(productName, message))
-
                                     }
                                     showAiDialog(suggestions)
                                 } else {
                                     showAiDialog(listOf(Pair("No Match", "No AI recommendations were found.")))
-
                                 }
-                            }
-
-                            catch (e: Exception) {
+                            } catch (e: Exception) {
                                 Log.e("AI_PARSE_ERROR", "Failed to parse AI response", e)
                                 if (isAdded) {
                                     context?.let {
@@ -212,7 +198,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
 
                     override fun onFailure(call: Call<AiResponse>, t: Throwable) {
                         Log.e("AI_FAILURE", "Exception", t)
-                        //loadingDialog?.dismissDialog()
+                        // loadingDialog?.dismissDialog()
                         sparkleAnimation.pauseAnimation()
                         sparkleAnimation.visibility = View.GONE
                         if (isAdded) {
@@ -224,9 +210,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
                 })
         }
 
-
-
-        checkoutBtn.setOnClickListener{
+        checkoutBtn.setOnClickListener {
             fun startOrderPlacedDialog() {
                 val builder = AlertDialog.Builder(activity)
 //                val inflater = activity.layoutInflater
@@ -253,9 +237,11 @@ class BagFragment : Fragment(), CartItemClickAdapter {
         val words = fullName
             .replace("[^A-Za-z ]".toRegex(), "") // remove punctuation, numbers, etc.
             .split(" ")
-            .filter { it.length > 2 && it.lowercase() !in listOf(
-                "with", "for", "from", "gift", "daily", "matching", "best", "friend", "girlfriend", "silver", "diy", "sterling", "piece", "give"
-            ) }
+            .filter {
+                it.length > 2 && it.lowercase() !in listOf(
+                    "with", "for", "from", "gift", "daily", "matching", "best", "friend", "girlfriend", "silver", "diy", "sterling", "piece", "give"
+                )
+            }
 
         // Return only top 2 or 3 keywords to represent product
         return words.take(3).joinToString(" ")
@@ -313,11 +299,11 @@ class BagFragment : Fragment(), CartItemClickAdapter {
         val dialogView = LayoutInflater.from(requireContext())
             .inflate(R.layout.dialog_ai_suggestion, null)
 
-        //val titleText = dialogView.findViewById<TextView>(R.id.ai_dialog_title)
+        // val titleText = dialogView.findViewById<TextView>(R.id.ai_dialog_title)
         val suggestionContainer = dialogView.findViewById<LinearLayout>(R.id.ai_message)
         val okBtn = dialogView.findViewById<Button>(R.id.btn_ai_ok)
         val closeBtn = dialogView.findViewById<ImageView>(R.id.btn_close_dialog)
-        //titleText.text = "🛒 Smart Cart Suggestions"
+        // titleText.text = "🛒 Smart Cart Suggestions"
 
         suggestionContainer.removeAllViews() // Ensure no duplicates
 
@@ -327,7 +313,6 @@ class BagFragment : Fragment(), CartItemClickAdapter {
 
             val productText = itemView.findViewById<TextView>(R.id.ai_product_name)
             val messageText = itemView.findViewById<TextView>(R.id.ai_message)
-
 
             val trimmedName = getShortProductName(productName)
             productText.text = "🛒: $trimmedName"
@@ -352,10 +337,6 @@ class BagFragment : Fragment(), CartItemClickAdapter {
 
         customDialog.show()
     }
-
-
-
-
 
     fun dismissDialog() {
         dialog?.dismiss()
@@ -382,6 +363,5 @@ class BagFragment : Fragment(), CartItemClickAdapter {
     override fun onItemUpdateClick(product: ProductEntity) {
         cartViewModel.updateCart(product)
     }
-
-
 }
+

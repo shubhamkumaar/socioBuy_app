@@ -1,27 +1,25 @@
 package com.example.buynow.presentation.activity
 
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.buynow.presentation.adapter.VisualSearchResultAdapter
 import com.example.buynow.R
 import com.example.buynow.data.model.Product
+import com.example.buynow.presentation.adapter.VisualSearchResultAdapter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.IOException
 
 class VisualResultActivity : AppCompatActivity() {
 
-
-    lateinit var predictNameTV:TextView
-    lateinit var resultProduct:ArrayList<Product>
-
+    lateinit var predictNameTV: TextView
+    lateinit var resultProduct: ArrayList<Product>
 
     lateinit var visualSearchResultAdapter: VisualSearchResultAdapter
-    lateinit var predictedRecView:RecyclerView
+    lateinit var predictedRecView: RecyclerView
 
     var PredictName: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +30,7 @@ class VisualResultActivity : AppCompatActivity() {
 
         predictedRecView = findViewById(R.id.predictedRecView)
         predictNameTV = findViewById(R.id.predictNameTV)
-        predictNameTV.text = "Search for "+PredictName
+        predictNameTV.text = "Search for " + PredictName
 
         resultProduct = arrayListOf()
 
@@ -42,15 +40,11 @@ class VisualResultActivity : AppCompatActivity() {
             layoutManager = GridLayoutManager(context, 2)
         }
         predictedRecView.setHasFixedSize(true)
-        visualSearchResultAdapter = VisualSearchResultAdapter(resultProduct,this)
+        visualSearchResultAdapter = VisualSearchResultAdapter(resultProduct, this)
         predictedRecView.adapter = visualSearchResultAdapter
-
-
-
     }
 
     fun getJsonData(context: Context, fileName: String): String? {
-
         val jsonString: String
         try {
             jsonString = context.assets.open(fileName).bufferedReader().use { it.readText() }
@@ -62,9 +56,7 @@ class VisualResultActivity : AppCompatActivity() {
     }
 
     private fun setResultData() {
-
         val jsonFileString = this.let {
-
             getJsonData(it, "NewProducts.json")
         }
         val gson = Gson()
@@ -75,12 +67,9 @@ class VisualResultActivity : AppCompatActivity() {
 
         coverD.forEachIndexed { idx, person ->
 
-            if (coverD[idx].productCategory == PredictName || coverD[idx].productName == PredictName){
+            if (coverD[idx].productCategory == PredictName || coverD[idx].productName == PredictName) {
                 resultProduct.add(coverD[idx])
             }
-
         }
-
-
     }
 }
