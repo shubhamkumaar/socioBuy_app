@@ -9,7 +9,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.DecelerateInterpolator
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -316,27 +315,12 @@ class BagFragment : Fragment(), CartItemClickAdapter {
             val productText = itemView.findViewById<TextView>(R.id.ai_product_name)
             val messageText = itemView.findViewById<TextView>(R.id.ai_message)
 
-            // Set product name with improved formatting
             val trimmedName = getShortProductName(productName)
-            productText.text = trimmedName
+            productText.text = "🛒: $trimmedName"
+            messageText.text = "💬 \n$message"
+            typeText(messageText, "💬 \n$message") // typing animation
 
-            // Add subtle entrance animation
-            itemView.alpha = 0f
-            itemView.translationY = 20f
             suggestionContainer.addView(itemView)
-
-            // Animate entrance
-            itemView.animate()
-                .alpha(1f)
-                .translationY(0f)
-                .setDuration(300)
-                .setInterpolator(DecelerateInterpolator())
-                .start()
-
-            // Start typing animation after entrance
-            itemView.postDelayed({
-                typeText(messageText, message)
-            }, 400)
         }
 
         val dialogBuilder = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
