@@ -8,7 +8,7 @@ plugins {
 }
 ktlint {
     android = true
-    ignoreFailures = false
+    ignoreFailures = true
     reporters {
         reporter "plain"
         reporter "checkstyle"

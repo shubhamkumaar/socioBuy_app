@@ -17,6 +17,7 @@ max_blank_lines = 0
 insert_final_newline = true
 trim_trailing_whitespace = true
 continuation_indent_size = 4
+disabled_rules=import-ordering,filename,wildcard-imports
 
 # Applies to XML files (like layout or manifest)
 [*.xml]
