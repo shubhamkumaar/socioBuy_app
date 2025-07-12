@@ -40,11 +40,35 @@ class CartAdapter(private val ctx: Context, val listener: CartItemClickAdapter):
         holder.cartMore.setOnClickListener {
             listener.onItemDeleteClick(cartItem)
         }
+        holder.btnIncrease.setOnClickListener {
+            cartItem.qua += 1
+            holder.quantityTvCart.text = cartItem.qua.toString()
+            listener.onItemUpdateClick(cartItem)
+            listener.onCartChanged(cartList)
+        }
+        holder.btnDecrease.setOnClickListener {
+            if (cartItem.qua > 1) {
+                cartItem.qua -= 1
+                holder.quantityTvCart.text = cartItem.qua.toString()
+                listener.onItemUpdateClick(cartItem)
+            } else {
+                listener.onItemDeleteClick(cartItem)
+            }
+            listener.onCartChanged(cartList)
+        }
+        holder.cartMore.setOnClickListener {
+            listener.onItemDeleteClick(cartItem)
+            cartList.removeAt(position)
+            notifyItemRemoved(position)
+            listener.onCartChanged(cartList)
+        }
     }
 
     override fun getItemCount(): Int {
         return cartList.size
     }
+
+
 
 
 
@@ -55,7 +79,8 @@ class CartAdapter(private val ctx: Context, val listener: CartItemClickAdapter):
         val cartName: TextView = itemView.findViewById(R.id.cartName)
         val cartPrice: TextView = itemView.findViewById(R.id.cartPrice)
         val quantityTvCart: TextView = itemView.findViewById(R.id.quantityTvCart)
-
+        val btnIncrease: View = itemView.findViewById(R.id.plusLayout)
+        val btnDecrease: View = itemView.findViewById(R.id.minusLayout)
 
     }
 
@@ -71,6 +96,7 @@ class CartAdapter(private val ctx: Context, val listener: CartItemClickAdapter):
 interface CartItemClickAdapter{
     fun onItemDeleteClick(product: ProductEntity)
     fun onItemUpdateClick(product: ProductEntity)
+    fun onCartChanged(cartList: List<ProductEntity>)
 
 
 }

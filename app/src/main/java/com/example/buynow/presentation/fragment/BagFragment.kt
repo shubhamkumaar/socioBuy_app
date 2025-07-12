@@ -111,10 +111,11 @@ class BagFragment : Fragment(), CartItemClickAdapter {
                 animationView.pauseAnimation()
             }
 
+            sum = 0.0
             Item.forEach {
-                sum += it.price
+                sum += it.price * it.qua
             }
-            totalPriceBagFrag.text = "$" + sum
+            totalPriceBagFrag.text = "₹${String.format("%.2f", sum)}"
         })
 
         aiSuggestion.setOnClickListener {
@@ -366,7 +367,16 @@ class BagFragment : Fragment(), CartItemClickAdapter {
                 Toast.makeText(it, "Removed From Bag", Toast.LENGTH_SHORT).show()
             }
         }
+        cartViewModel.allproducts.value?.let { onCartChanged(it) }
     }
+    override fun onCartChanged(cartList: List<ProductEntity>) {
+        var total = 0.0
+        for (item in cartList) {
+            total += item.price * item.qua
+        }
+        totalPriceBagFrag.text = "₹${String.format("%.2f", total)}"
+    }
+
 
 
     override fun onItemUpdateClick(product: ProductEntity) {
