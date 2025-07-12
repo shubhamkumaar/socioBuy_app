@@ -25,7 +25,11 @@ class CartAdapter(private val ctx: Context, val listener: CartItemClickAdapter) 
         val cartItem: ProductEntity = cartList[position]
 
         holder.cartName.text = cartItem.name
-        holder.cartPrice.text = "₹"+ cartItem.price
+        val exchangeRate = 83.25 // 1 USD = 83.25 INR
+        val priceInINR = (cartItem.price * exchangeRate * cartItem.qua).toInt()
+        holder.cartPrice.text = "₹%,d".format(priceInINR)
+
+
         holder.quantityTvCart.text = cartItem.qua.toString()
         holder.cartMore.setOnClickListener {
         }
@@ -34,12 +38,12 @@ class CartAdapter(private val ctx: Context, val listener: CartItemClickAdapter) 
             .load(cartItem.Image)
             .into(holder.cartImage)
 
-        holder.cartMore.setOnClickListener {
-            listener.onItemDeleteClick(cartItem)
-        }
+
         holder.btnIncrease.setOnClickListener {
             cartItem.qua += 1
             holder.quantityTvCart.text = cartItem.qua.toString()
+            val newPrice = (cartItem.price * exchangeRate * cartItem.qua).toInt()
+            holder.cartPrice.text = "₹$newPrice"
             listener.onItemUpdateClick(cartItem)
             listener.onCartChanged(cartList)
         }
@@ -47,6 +51,8 @@ class CartAdapter(private val ctx: Context, val listener: CartItemClickAdapter) 
             if (cartItem.qua > 1) {
                 cartItem.qua -= 1
                 holder.quantityTvCart.text = cartItem.qua.toString()
+                val newPrice = (cartItem.price * exchangeRate * cartItem.qua).toInt()
+                holder.cartPrice.text = "₹$newPrice"
                 listener.onItemUpdateClick(cartItem)
             } else {
                 listener.onItemDeleteClick(cartItem)

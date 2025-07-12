@@ -35,8 +35,10 @@ import android.view.animation.AccelerateDecelerateInterpolator
 
 // For bold text (Typeface)
 import android.graphics.Typeface
+import android.os.Build
 import android.text.TextUtils
 import android.util.Log
+import androidx.annotation.RequiresApi
 
 // For image transition using Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -182,6 +184,7 @@ class ProductDetailsActivity : AppCompatActivity() {
     }
 
     // Example timestamp formatter (requires Java 8+ or ThreeTenABP)
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun formatTimestamp(timestamp: String): String {
         return try {
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", Locale.getDefault())

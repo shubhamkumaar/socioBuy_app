@@ -2,6 +2,8 @@ package com.example.buynow.presentation.fragment
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.*
@@ -16,6 +18,8 @@ import com.example.buynow.presentation.activity.VisualSearchActivity
 import com.example.buynow.presentation.adapter.CoverProductAdapter
 import com.example.buynow.presentation.adapter.ProductAdapter
 import com.example.buynow.presentation.viewmodel.ProductViewModel
+import androidx.recyclerview.widget.LinearSnapHelper
+
 
 class HomeFragment : Fragment() {
 
@@ -23,6 +27,12 @@ class HomeFragment : Fragment() {
     private lateinit var animationView: LottieAnimationView
     private lateinit var productViewModel: ProductViewModel
     private var TAG = "HomeFragment"
+    private lateinit var coverAdapter: CoverProductAdapter
+    private lateinit var layoutManager: LinearLayoutManager
+    private lateinit var handler: Handler
+    private lateinit var runnable: Runnable
+    private var currentPosition = 0
+    private val scrollInterval = 3000L  // 3 seconds
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -82,10 +92,30 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupCoverProducts(coverProducts: List<Product>) {
-        val adapter = CoverProductAdapter(requireContext(), ArrayList(coverProducts))
-        coverRecView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        coverRecView.adapter = adapter
+        val loopedList = ArrayList<Product>().apply {
+            addAll(coverProducts)
+            addAll(coverProducts)
+            addAll(coverProducts)
+        }
+
+        coverAdapter = CoverProductAdapter(requireContext(), loopedList)
+        layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+
+        coverRecView.layoutManager = layoutManager
+        coverRecView.adapter = coverAdapter
+
+//        // Scroll to the middle set
+//        currentPosition = coverProducts.size
+//        coverRecView.scrollToPosition(currentPosition)
+
+        LinearSnapHelper().attachToRecyclerView(coverRecView)
+
+        startAutoScroll(loopedList.size)
     }
+
+
+
+
 
     private fun setCategorySection(root: View, sectionId: Int, title: String, products: List<Product>?) {
         val sectionView = root.findViewById<View>(sectionId)
@@ -125,4 +155,70 @@ class HomeFragment : Fragment() {
         animationView.visibility = View.GONE
         coverRecView.visibility = View.VISIBLE
     }
+
+    private fun startAutoScroll(itemCount: Int) {
+        handler = Handler(Looper.getMainLooper())
+
+        runnable = object : Runnable {
+            override fun run() {
+                // Smooth scroll by small pixels
+                coverRecView.scrollBy(5, 0)  // adjust speed here (e.g. 5–10 for smooth glide)
+
+                val lastItem = itemCount - 1
+                val lastVisible = layoutManager.findLastCompletelyVisibleItemPosition()
+
+                // When last item is fully shown, jump to first **smoothly**
+                if (lastVisible == lastItem) {
+                    coverRecView.smoothScrollToPosition(0)
+                    // Optional: slight delay to let it reset naturally
+                    handler.postDelayed(this, 2000L)
+                    return
+                }
+
+                handler.postDelayed(this, 16L)  // ~60 FPS for smooth scroll
+            }
+        }
+
+        handler.post(runnable)
+
+        coverRecView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                when (newState) {
+                    RecyclerView.SCROLL_STATE_DRAGGING -> {
+                        handler.removeCallbacks(runnable)
+                    }
+                    RecyclerView.SCROLL_STATE_IDLE -> {
+                        handler.postDelayed(runnable, 2000L)
+                    }
+                }
+            }
+        })
+    }
+
+
+
+
+
+
+    // Listener: Pause auto-scroll on user touch
+
+
+
+
+    override fun onResume() {
+        super.onResume()
+        if (::handler.isInitialized && ::runnable.isInitialized) {
+            handler.postDelayed(runnable, scrollInterval)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (::handler.isInitialized && ::runnable.isInitialized) {
+            handler.removeCallbacks(runnable)
+        }
+    }
+
+
+
 }

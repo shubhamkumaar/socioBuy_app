@@ -100,10 +100,10 @@ class BagFragment : Fragment(), CartItemClickAdapter {
                     MybagText.visibility = View.VISIBLE
                     animationView.pauseAnimation()
                 }
-
+                val exchangeRate = 83.25
                 sum = 0.0
                 Item.forEach {
-                    sum += it.price * it.qua
+                    sum += it.price * it.qua * exchangeRate
                 }
                 totalPriceBagFrag.text = "₹${String.format("%.2f", sum)}"
             }
@@ -352,9 +352,10 @@ class BagFragment : Fragment(), CartItemClickAdapter {
         cartViewModel.allproducts.value?.let { onCartChanged(it) }
     }
     override fun onCartChanged(cartList: List<ProductEntity>) {
+        val exchangeRate = 83.25
         var total = 0.0
         for (item in cartList) {
-            total += item.price * item.qua
+            total += item.price * item.qua* exchangeRate
         }
         totalPriceBagFrag.text = "₹${String.format("%.2f", total)}"
     }
