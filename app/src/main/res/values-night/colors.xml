@@ -10,4 +10,11 @@
     <color name="mainText">#FFFFFFFF</color>
     <color name="textAd">#9B9B9B</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="primaryText">#FFFFFF</color>
+    <color name="secondaryText">#B0B0B0</color>
+    <color name="divider">#333333</color>
+    <color name="primaryButton">#3B82F6</color>
+    <color name="cardBackground">#1E1E1E</color>
+
+
 </resources>
