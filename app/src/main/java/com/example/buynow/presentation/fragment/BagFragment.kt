@@ -3,6 +3,8 @@ package com.example.buynow.presentation.fragment
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.example.buynow.presentation.LoadingDialog
 
@@ -11,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -34,9 +37,10 @@ import com.example.buynow.data.local.room.ProductEntity
 import com.example.buynow.data.model.AiRequest
 import com.example.buynow.data.model.AiResponse
 import com.example.buynow.presentation.activity.RetrofitInstance
+import org.json.JSONArray
 
 class BagFragment : Fragment(), CartItemClickAdapter {
-    private var loadingDialog: LoadingDialog? = null
+    lateinit var loadingDialog: LoadingDialog
 
     lateinit var cartRecView:RecyclerView
     lateinit var cartAdapter: CartAdapter
@@ -44,6 +48,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
     lateinit var totalPriceBagFrag:TextView
     lateinit var Item: ArrayList<ProductEntity>
      var sum:Double = 0.0
+
 
     private lateinit var cartViewModel: CartViewModel
     private var dialog: AlertDialog? = null
@@ -65,7 +70,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
         val aiSuggestion:Button = view.findViewById<Button>(R.id.ai_suggestion_button)
         val checkoutBtn:Button = view.findViewById<Button>(R.id.checkOut_BagPage)
         Item = arrayListOf()
-
+        val sparkleAnimation = view.findViewById<LottieAnimationView>(R.id.lottie_sparkle)
 
         animationView.playAnimation()
         animationView.loop(true)
@@ -130,7 +135,9 @@ class BagFragment : Fragment(), CartItemClickAdapter {
             } else {
                 listOf(39764445) // Fallback product
             }
-            loadingDialog?.startLoadingDialog()
+            sparkleAnimation.visibility = View.VISIBLE
+            sparkleAnimation.playAnimation()
+            //loadingDialog?.startLoadingDialog()
 
             Log.d("AI_REQUEST", "Sending productIds: $productIds")
 
@@ -139,24 +146,53 @@ class BagFragment : Fragment(), CartItemClickAdapter {
             RetrofitInstance.apiInterface.getAiRecommendation("Bearer $authToken", request)
                 .enqueue(object : retrofit2.Callback<AiResponse> {
                     override fun onResponse(call: Call<AiResponse>, response: retrofit2.Response<AiResponse>) {
-                        loadingDialog?.dismissDialog()
+                        //loadingDialog?.dismissDialog()
+                        sparkleAnimation.pauseAnimation()
+                        sparkleAnimation.visibility = View.GONE
                         if (!isAdded) return
 
                         if (response.isSuccessful) {
                             val responseBody = response.body()?.message ?: "[]"
                             Log.d("AI_RESPONSE_RAW", responseBody)
 
+//                            try {
+//
+//                                val jsonArray = JSONArray(responseBody)
+//                                if (jsonArray.length() > 0) {
+//                                    val obj = jsonArray.getJSONObject(0)
+//                                    val productName = obj.optString("productName", "Unknown Product")
+//                                    val message = obj.optString("message", "No message available.")
+//                                    showAiDialog(productName, message)
+//                                } else {
+//                                    showAiDialog("No Match", "No AI recommendations were found.")
+//                                }
+//                            }
                             try {
                                 val jsonArray = org.json.JSONArray(responseBody)
                                 if (jsonArray.length() > 0) {
-                                    val obj = jsonArray.getJSONObject(0)
-                                    val productName = obj.optString("productName", "Unknown Product")
-                                    val message = obj.optString("message", "No message available.")
-                                    showAiDialog(productName, message)
+                                    // Loop through every recommendation
+                                    val suggestions = mutableListOf<Pair<String, String>>()
+
+                                    for (i in 0 until jsonArray.length()) {
+                                        val obj = jsonArray.getJSONObject(i)
+                                        val productName = obj.optString("productName", "Unknown Product")
+                                        val message = obj.optString("message", "No message available.")
+
+                                        // Show dialog with delay for next
+//                                        Handler(Looper.getMainLooper()).postDelayed({
+//                                            showAiDialog(productName, message)
+//                                        }, i * 500L) // 500ms delay between dialogs
+                                        suggestions.add(Pair(productName, message))
+
+                                    }
+                                    showAiDialog(suggestions)
                                 } else {
-                                    showAiDialog("No Match", "No AI recommendations were found.")
+                                    showAiDialog(listOf(Pair("No Match", "No AI recommendations were found.")))
+
                                 }
-                            } catch (e: Exception) {
+                            }
+
+                            catch (e: Exception) {
                                 Log.e("AI_PARSE_ERROR", "Failed to parse AI response", e)
                                 if (isAdded) {
                                     context?.let {
@@ -175,7 +211,9 @@ class BagFragment : Fragment(), CartItemClickAdapter {
 
                     override fun onFailure(call: Call<AiResponse>, t: Throwable) {
                         Log.e("AI_FAILURE", "Exception", t)
-                        loadingDialog?.dismissDialog()
+                        //loadingDialog?.dismissDialog()
+                        sparkleAnimation.pauseAnimation()
+                        sparkleAnimation.visibility = View.GONE
                         if (isAdded) {
                             context?.let {
                                 Toast.makeText(it, "AI API Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
@@ -209,14 +247,113 @@ class BagFragment : Fragment(), CartItemClickAdapter {
         }
         return view
     }
-    private fun showAiDialog(productName: String, message: String) {
-        if (!isAdded) return
-        val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle("🧠 AI Suggestion")
-        builder.setMessage("✨ Product: $productName\n\n💬 Suggestion:\n$message")
-        builder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
-        builder.show()
+    private fun getShortProductName(fullName: String): String {
+        // Remove all non-letter characters and split
+        val words = fullName
+            .replace("[^A-Za-z ]".toRegex(), "") // remove punctuation, numbers, etc.
+            .split(" ")
+            .filter { it.length > 2 && it.lowercase() !in listOf(
+                "with", "for", "from", "gift", "daily", "matching", "best", "friend", "girlfriend", "silver", "diy", "sterling", "piece", "give"
+            ) }
+
+        // Return only top 2 or 3 keywords to represent product
+        return words.take(3).joinToString(" ")
     }
+
+    private fun typeText(textView: TextView, fullText: String, delay: Long = 25L) {
+        val handler = Handler(Looper.getMainLooper())
+        var index = 0
+
+        val runnable = object : Runnable {
+            override fun run() {
+                if (index <= fullText.length) {
+                    textView.text = fullText.substring(0, index)
+                    index++
+                    handler.postDelayed(this, delay)
+                }
+            }
+        }
+
+        handler.post(runnable)
+    }
+
+//    private fun showAiDialog(productName: String, message: String) {
+//        if (!isAdded) return
+//
+//        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_ai_suggestion, null)
+//
+//        val titleText = dialogView.findViewById<TextView>(R.id.ai_dialog_title)
+//        val productText = dialogView.findViewById<TextView>(R.id.ai_product_name)
+//        val messageText = dialogView.findViewById<TextView>(R.id.ai_message)
+//        val okBtn = dialogView.findViewById<Button>(R.id.btn_ai_ok)
+//
+//        val trimmedName = getShortProductName(productName)
+//        productText.text = "✨ Product: $trimmedName"
+//
+//        messageText.text = "💬 Suggestion:\n$message"
+//        typeText(messageText, "💬 Suggestion:\n$message") // typing animation
+//
+//        val dialogBuilder = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
+//            .setView(dialogView)
+//
+//        val customDialog = dialogBuilder.create()
+//        customDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+//
+//        okBtn.setOnClickListener {
+//            customDialog.dismiss()
+//        }
+//
+//        customDialog.show()
+//    }
+
+    private fun showAiDialog(suggestions: List<Pair<String, String>>) {
+        if (!isAdded) return
+
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_ai_suggestion, null)
+
+        //val titleText = dialogView.findViewById<TextView>(R.id.ai_dialog_title)
+        val suggestionContainer = dialogView.findViewById<LinearLayout>(R.id.ai_message)
+        val okBtn = dialogView.findViewById<Button>(R.id.btn_ai_ok)
+        val closeBtn = dialogView.findViewById<ImageView>(R.id.btn_close_dialog)
+        //titleText.text = "🛒 Smart Cart Suggestions"
+
+        suggestionContainer.removeAllViews() // Ensure no duplicates
+
+        for ((productName, message) in suggestions) {
+            val itemView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.item_ai_suggestion, suggestionContainer, false)
+
+            val productText = itemView.findViewById<TextView>(R.id.ai_product_name)
+            val messageText = itemView.findViewById<TextView>(R.id.ai_message)
+
+
+            val trimmedName = getShortProductName(productName)
+            productText.text = "🛒: $trimmedName"
+            messageText.text = "💬 \n$message"
+            typeText(messageText, "💬 \n$message") // typing animation
+
+            suggestionContainer.addView(itemView)
+        }
+
+        val dialogBuilder = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
+            .setView(dialogView)
+
+        val customDialog = dialogBuilder.create()
+        customDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        okBtn.setOnClickListener {
+            customDialog.dismiss()
+        }
+        closeBtn.setOnClickListener {
+            customDialog.dismiss()
+        }
+
+        customDialog.show()
+    }
+
+
+
 
 
     fun dismissDialog() {

@@ -11,6 +11,12 @@
     <color name="textAd">#9B9B9B</color>
     <color name="white">#FFFFFFFF</color>
     <color name="card_dark">#1E1E1E</color>
+    <color name="primaryText">#1E3A8A</color>
+    <color name="secondaryText">#4B5563</color>
+    <color name="divider">#E0E0E0</color>
+    <color name="primaryButton">#1E40AF</color>
+    <color name="cardBackground">#FFFFFF</color> <!-- optional fallback for dialogs -->
+
 
 
 </resources>
