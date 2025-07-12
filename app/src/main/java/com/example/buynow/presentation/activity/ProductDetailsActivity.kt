@@ -51,6 +51,7 @@ import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
+import kotlin.math.roundToInt
 
 class ProductDetailsActivity : AppCompatActivity() {
     lateinit var ProductFrom: String
@@ -432,7 +433,9 @@ class ProductDetailsActivity : AppCompatActivity() {
                             .into(productImage_ProductDetailsPage)
 
                         productName_ProductDetailsPage.text = pr.productName
-                        productPrice_ProductDetailsPage.text = "$${pr.productPrice}"
+                        val exchangeRate = 83.25
+                        val priceInRupees = pr.productPrice.toDouble() * exchangeRate
+                        productPrice_ProductDetailsPage.text = "₹${priceInRupees.roundToInt()}"
                         productBrand_ProductDetailsPage.text = pr.productBrand
                         productDes_ProductDetailsPage.text = pr.productDes
                         productRating_singleProduct.rating = pr.productRating.toFloat()

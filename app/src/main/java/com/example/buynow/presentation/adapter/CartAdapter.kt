@@ -27,7 +27,7 @@ class CartAdapter(private val ctx: Context, val listener: CartItemClickAdapter):
         val cartItem: ProductEntity = cartList[position]
 
         holder.cartName.text = cartItem.name
-        holder.cartPrice.text = "$"+ cartItem.price
+        holder.cartPrice.text = "₹"+ cartItem.price
         holder.quantityTvCart.text = cartItem.qua.toString()
         holder.cartMore.setOnClickListener {
 
