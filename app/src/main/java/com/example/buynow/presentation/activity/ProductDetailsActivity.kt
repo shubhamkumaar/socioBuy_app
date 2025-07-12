@@ -35,17 +35,22 @@ import android.view.animation.AccelerateDecelerateInterpolator
 
 // For bold text (Typeface)
 import android.graphics.Typeface
+import android.text.TextUtils
 import android.util.Log
 
 // For image transition using Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.buynow.data.model.ProductById
+import com.example.buynow.data.model.SimilarProduct
 import com.example.buynow.presentation.LoadingDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.properties.Delegates
+import java.time.*
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.util.Locale
 
 class ProductDetailsActivity : AppCompatActivity() {
     lateinit var ProductFrom: String
@@ -74,6 +79,8 @@ class ProductDetailsActivity : AppCompatActivity() {
     lateinit var cardNumber: String
     var productId :Int = 0
 
+    lateinit var sameBrand :List<SimilarProduct>
+    lateinit var sameProduct :List<SimilarProduct>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_product_details)
@@ -129,85 +136,96 @@ class ProductDetailsActivity : AppCompatActivity() {
         backIv_ProfileFrag.setOnClickListener {
             onBackPressed()
         }
-        loadRecentlyBoughtContacts()
+//        loadRecentlyBoughtContacts()
 
         addToCart_ProductDetailsPage.setOnClickListener {
-            Log.d("AddToCartCheck", "pName=${if (::pName.isInitialized) pName else "NotInit"}, pPid=$pPid, pPrice=$pPrice")
 
-            val bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
+            val bottomSheetDialod = BottomSheetDialog(
+                this, R.style.BottomSheetDialogTheme
+            )
 
-            val bottomSheetView = LayoutInflater.from(this).inflate(
+            val bottomSheetView = LayoutInflater.from(applicationContext).inflate(
                 R.layout.fragment_add_to_bag,
                 findViewById<ConstraintLayout>(R.id.bottomSheet)
             )
 
-            val quantityEditText = bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom)
-            val plusButton = bottomSheetView.findViewById<LinearLayout>(R.id.plusLayout)
-            val minusButton = bottomSheetView.findViewById<LinearLayout>(R.id.minusLayout)
-            val addToCartButton = bottomSheetView.findViewById<View>(R.id.addToCart_BottomSheet)
+            bottomSheetView.findViewById<View>(R.id.addToCart_BottomSheet).setOnClickListener {
 
-            // Default quantity
-            qua = 1
-            quantityEditText.setText(qua.toString())
-
-            plusButton.setOnClickListener {
-                if (qua < 10) {
-                    qua++
-                    quantityEditText.setText(qua.toString())
-                }
+                pPrice *= bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).text.toString()
+                    .toInt()
+                addProductToBag()
+                bottomSheetDialod.dismiss()
             }
 
-            minusButton.setOnClickListener {
-                if (qua > 1) {
+            bottomSheetView.findViewById<LinearLayout>(R.id.minusLayout).setOnClickListener {
+                if(bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).text.toString()
+                        .toInt() > 1){
                     qua--
-                    quantityEditText.setText(qua.toString())
+                    bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).setText(qua.toString())
                 }
             }
 
-            addToCartButton.setOnClickListener {
-                val quantityText = quantityEditText.text.toString()
-                val quantity = quantityText.toIntOrNull()
-
-                if (quantity == null || quantity <= 0) {
-                    Toast.makeText(this, "Please enter a valid quantity", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
+            bottomSheetView.findViewById<LinearLayout>(R.id.plusLayout).setOnClickListener {
+                if(bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).text.toString()
+                        .toInt() < 10){
+                    qua++
+                    bottomSheetView.findViewById<EditText>(R.id.quantityEtBottom).setText(qua.toString())
                 }
-
-                // Validate product data
-                if (!::pName.isInitialized || !::pImage.isInitialized || pPrice == 0.0 || pPid == 0) {
-                    Toast.makeText(this, "Product not loaded yet", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-
-                val totalPrice = pPrice * quantity.toDouble()
-
-                cartViewModel = ViewModelProviders.of(this).get(CartViewModel::class.java)
-                try {
-                    cartViewModel.insert(ProductEntity(pName, quantity, totalPrice, pPid, pImage))
-                    toast("Added to Bag Successfully")
-                    bottomSheetDialog.dismiss()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    Toast.makeText(this, "DB Error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-                }
-
             }
-            bottomSheetDialog.setContentView(bottomSheetView)
-            bottomSheetDialog.show()
+
+            bottomSheetDialod.setContentView(bottomSheetView)
+            bottomSheetDialod.show()
         }
 
     }
+    // Replace this with real logic or backend-provided avatar
+    private fun getRandomAvatarUrl(id: Int): String {
+        val index = id % 10
+        return "https://randomuser.me/api/portraits/men/$index.jpg" // or /women/
+    }
 
-    private fun loadRecentlyBoughtContacts() {
-        val recentBuyers = listOf(
-            PurchaseDisplay(User("Priya Sharma", "https://randomuser.me/api/portraits/women/1.jpg"), "Red Dress", "2 hours ago"),
-            PurchaseDisplay(User("Amit Singh", "https://randomuser.me/api/portraits/men/2.jpg"), "Leather Wallet", "5 hours ago"),
-            PurchaseDisplay(User("Nikita Rao", "https://randomuser.me/api/portraits/women/3.jpg"), "Sunglasses", "1 day ago"),
-            PurchaseDisplay(User("Raj Mehta", "https://randomuser.me/api/portraits/men/4.jpg"), "Sneakers", "2 days ago"),
-            PurchaseDisplay(User("Ishita Verma", "https://randomuser.me/api/portraits/women/5.jpg"), "Wrist Watch", "3 days ago")
-        )
+    // Example timestamp formatter (requires Java 8+ or ThreeTenABP)
+    private fun formatTimestamp(timestamp: String): String {
+        return try {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", Locale.getDefault())
+            val eventTime = LocalDateTime.parse(timestamp, formatter)
+            val now = LocalDateTime.now()
 
-        val container = findViewById<LinearLayout>(R.id.recentBuyersContainer)
+            val duration = Duration.between(eventTime, now)
+
+            val seconds = duration.seconds
+            val minutes = seconds / 60
+            val hours = minutes / 60
+            val days = hours / 24
+
+            when {
+                seconds < 60 -> "Just now"
+                minutes < 60 -> "$minutes minutes ago"
+                hours < 24 -> "$hours hours ago"
+                days < 7 -> "$days days ago"
+                else -> {
+                    // Fallback to formatted date
+                    val outputFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+                    eventTime.format(outputFormatter)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            "Some time ago"
+        }
+    }
+//    findViewById<LinearLayout>(R.id.recentBuyersContainer)
+    private fun loadRecentlyBoughtContacts(similarProducts: List<SimilarProduct>,container: LinearLayout,flag:Int) {
+        val recentBuyers = similarProducts.map {
+            val avatarUrl = getRandomAvatarUrl(it.productId)
+            PurchaseDisplay(
+                user = User(userName = it.name, userImage = avatarUrl),
+                productName = it.productName,
+                timeAgo = formatTimestamp(it.timestamp)
+            )
+        }
+
+        val container = container
         container.removeAllViews()
 
         val inflater = LayoutInflater.from(this)
@@ -236,7 +254,6 @@ class ProductDetailsActivity : AppCompatActivity() {
             rowLayout.addView(imageView)
         }
 
-        // ➕ Add final plus sign overlapping last avatar
         val plusView = TextView(this)
         val plusParams = LinearLayout.LayoutParams(avatarSize, avatarSize)
         plusParams.setMargins(0, 0, 0, 0)
@@ -262,10 +279,17 @@ class ProductDetailsActivity : AppCompatActivity() {
         container.addView(rowLayout)
 
         // 🟦 Click handler to show dialog
-        val section = findViewById<View>(R.id.recentlyBoughtSection)
-        val showDialog = { showBuyerDialog(recentBuyers) }
-        section.setOnClickListener { showDialog() }
-        container.setOnClickListener { showDialog() }
+       if(flag==1){
+           val section = findViewById<View>(R.id.recentlyBoughtSection)
+           val showDialog = { showBuyerDialog(recentBuyers) }
+           section.setOnClickListener { showDialog() }
+           container.setOnClickListener { showDialog() }
+       }else{
+           val section = findViewById<View>(R.id.recentlyBoughtSection)
+           val showDialog = { showSameBrandUserDialog(recentBuyers) }
+           section.setOnClickListener { showDialog() }
+           container.setOnClickListener { showDialog() }
+       }
     }
 
 
@@ -309,6 +333,54 @@ class ProductDetailsActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    private fun showSameBrandUserDialog(recentBuyers: List<PurchaseDisplay>) {
+        val dialog = AlertDialog.Builder(this).create()
+        val view = layoutInflater.inflate(R.layout.dialog_recent_buyers, null)
+        val closeIcon = view.findViewById<ImageView>(R.id.closeIcon)
+        val container = view.findViewById<LinearLayout>(R.id.buyerDialogList)
+
+        recentBuyers.forEach { buyer ->
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(32, 24, 32, 24)
+                val params = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                params.setMargins(0, 0, 0, 20)
+                layoutParams = params
+                setBackgroundResource(R.drawable.buyer_row_bg)
+            }
+
+            val nameTimeText = TextView(this).apply {
+                text = "👤 ${buyer.user.userName}   •   🕒 ${buyer.timeAgo}"
+                textSize = 16f
+                setTextColor(resources.getColor(android.R.color.white))
+                typeface = resources.getFont(R.font.metropolis_m)
+            }
+
+            val productText = TextView(this).apply {
+                text = "🛒 ${buyer.productName}"
+                textSize = 15f
+                setTextColor(resources.getColor(android.R.color.darker_gray))
+                typeface = resources.getFont(R.font.metropolis_regular)
+                setPadding(0, 6, 0, 0)
+                maxLines = 2
+                ellipsize = TextUtils.TruncateAt.END
+            }
+
+            row.addView(nameTimeText)
+            row.addView(productText)
+            container.addView(row)
+        }
+
+        closeIcon.setOnClickListener { dialog.dismiss() }
+
+        dialog.setView(view)
+        dialog.setCancelable(false)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
+    }
 
 
 
@@ -350,6 +422,11 @@ class ProductDetailsActivity : AppCompatActivity() {
                     )
                     withContext(Dispatchers.Main) {
                         val pr = response.product
+                        sameBrand = response.same_brand
+                        sameProduct = response.same_product
+                        Log.d("SameBrand",sameBrand.toString())
+                        loadRecentlyBoughtContacts(sameProduct,findViewById<LinearLayout>(R.id.recentBuyersContainer),1)
+                        loadRecentlyBoughtContacts(sameBrand,findViewById<LinearLayout>(R.id.sameBrandContainer),0)
                         Glide.with(applicationContext)
                             .load(pr.productImage)
                             .into(productImage_ProductDetailsPage)
@@ -365,7 +442,6 @@ class ProductDetailsActivity : AppCompatActivity() {
                         pPrice = pr.productPrice.toDouble()
                         pPid = pr.productId
                         pImage = pr.productImage
-                        Log.d("ProductDetailsAdd","Name :$pName, Price: $pPrice, pPid: $pPid, pImage: $pImage")
                     }
                 } catch (e:Exception){
                     withContext(Dispatchers.Main) {
@@ -378,45 +454,6 @@ class ProductDetailsActivity : AppCompatActivity() {
                 }
             }
         }
-
-//        var fileJson: String = ""
-//
-//        if (ProductFrom.equals("Cover")) {
-//            fileJson = "CoverProducts.json"
-//        }
-//        if (ProductFrom.equals("New")) {
-//            fileJson = "NewProducts.json"
-//        }
-//
-//
-//        val jsonFileString = this.let {
-//
-//            getJsonData(it, fileJson)
-//        }
-//
-//        val gson = Gson()
-//
-//
-//        val listCoverType = object : TypeToken<List<Product>>() {}.type
-//
-//        var coverD: List<Product> = gson.fromJson(jsonFileString, listCoverType)
-//
-//        Glide.with(applicationContext)
-//            .load(coverD[productIndex].productImage)
-//            .into(productImage_ProductDetailsPage)
-//
-//            productName_ProductDetailsPage.text = pr?.productName ?: coverD[productIndex].productName
-//            productPrice_ProductDetailsPage.text = "$" + (pr?.productPrice ?: 0)
-//            productBrand_ProductDetailsPage.text = pr?.productBrand ?: coverD[productIndex].productBrand
-//            productDes_ProductDetailsPage.text = pr?.productDes ?: coverD[productIndex].productDes
-//            productRating_singleProduct.rating = coverD[productIndex].productRating
-//            RatingProductDetails.text = coverD[productIndex].productRating.toString() + " Rating on this Product."
-//
-//            pName = coverD[productIndex].productName
-//            pPrice = coverD[productIndex].productPrice.toInt()
-//            pPid = coverD[productIndex].productId
-//            pImage = pr?.productImage?: coverD[productIndex].productImage
-
     }
 
     private fun setRecData() {
