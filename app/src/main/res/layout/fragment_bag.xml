@@ -141,25 +141,42 @@
     </LinearLayout>
 
     <!-- Floating AI Suggestion Button -->
-    <Button
-        android:id="@+id/ai_suggestion_button"
-        android:layout_width="65dp"
-        android:layout_height="68dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="120dp"
-        android:background="@android:color/transparent"
-        android:drawableTop="@drawable/ai_sparke"
-        android:drawablePadding="4dp"
-        android:elevation="12dp"
-        android:gravity="center"
-        android:padding="0dp"
-        android:text=""
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+<!--    <Button-->
+<!--        android:id="@+id/ai_suggestion_button"-->
+<!--        android:layout_width="65dp"-->
+<!--        android:layout_height="68dp"-->
+<!--        android:layout_marginEnd="16dp"-->
+<!--        android:layout_marginBottom="120dp"-->
+<!--        android:background="@android:color/transparent"-->
+<!--        android:drawableTop="@drawable/ai_sparke"-->
+<!--        android:drawablePadding="4dp"-->
+<!--        android:elevation="12dp"-->
+<!--        android:gravity="center"-->
+<!--        android:padding="0dp"-->
+<!--        android:text=""-->
+<!--        android:textColor="@android:color/white"-->
+<!--        android:textSize="16sp"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent" />-->
+
 
     <!-- Centered Fullscreen Sparkle Animation for AI Suggestion -->
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/ai_suggestion_button"
+        android:layout_width="170dp"
+        android:layout_height="170dp"
+        android:layout_marginBottom="96dp"
+        android:clickable="true"
+        android:contentDescription="AI Robot Assistant"
+        android:elevation="14dp"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/sparkle" />
+
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/lottie_sparkle"
         android:layout_width="250dp"

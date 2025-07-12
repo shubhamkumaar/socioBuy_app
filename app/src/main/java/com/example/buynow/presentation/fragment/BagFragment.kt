@@ -59,7 +59,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
         val bottomCartLayout: LinearLayout = view.findViewById(R.id.bottomCartLayout)
         val emptyBagMsgLayout: LinearLayout = view.findViewById(R.id.emptyBagMsgLayout)
         val MybagText: TextView = view.findViewById(R.id.MybagText)
-        val aiSuggestion: Button = view.findViewById<Button>(R.id.ai_suggestion_button)
+        val aiSuggestion = view.findViewById<LottieAnimationView>(R.id.ai_suggestion_button)
         val checkoutBtn: Button = view.findViewById<Button>(R.id.checkOut_BagPage)
         Item = arrayListOf()
         val sparkleAnimation = view.findViewById<LottieAnimationView>(R.id.lottie_sparkle)
@@ -127,6 +127,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
             } else {
                 listOf(39764445) // Fallback product
             }
+            aiSuggestion.visibility = View.GONE
             sparkleAnimation.visibility = View.VISIBLE
             sparkleAnimation.playAnimation()
             // loadingDialog?.startLoadingDialog()
@@ -139,8 +140,10 @@ class BagFragment : Fragment(), CartItemClickAdapter {
                 .enqueue(object : retrofit2.Callback<AiResponse> {
                     override fun onResponse(call: Call<AiResponse>, response: retrofit2.Response<AiResponse>) {
                         // loadingDialog?.dismissDialog()
+
                         sparkleAnimation.pauseAnimation()
                         sparkleAnimation.visibility = View.GONE
+                        aiSuggestion.visibility = View.VISIBLE
                         if (!isAdded) return
 
                         if (response.isSuccessful) {
@@ -202,6 +205,7 @@ class BagFragment : Fragment(), CartItemClickAdapter {
                         // loadingDialog?.dismissDialog()
                         sparkleAnimation.pauseAnimation()
                         sparkleAnimation.visibility = View.GONE
+                        aiSuggestion.visibility = View.VISIBLE
                         if (isAdded) {
                             context?.let {
                                 Toast.makeText(it, "AI API Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
