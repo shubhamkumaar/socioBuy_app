@@ -13,7 +13,7 @@ import retrofit2.http.Path
 
 interface ApiInterface {
     @FormUrlEncoded // MANDATORY: Indicates that the request body will be URL-encoded form data
-    @POST("/login") // The endpoint for the login API
+    @POST("login") // The endpoint for the login API
     suspend fun loginUser(
         @Field("grant_type") grantType: String = "password", // As per the original curl command
         @Field("username") username: String, // Maps to 'email' from your LoginRequest for the form data
@@ -23,27 +23,27 @@ interface ApiInterface {
         @Field("client_secret") clientSecret: String = "string" // As per the original curl command
     ): LoginData
 
-    @POST("/register")
+    @POST("register")
     suspend fun register(@Body request: SignUpRequest): LoginData
 
-    @POST("/users/import_contacts") // Use /import_contacts as per your backend
+    @POST("users/import_contacts") // Use /import_contacts as per your backend
     suspend fun importContact(
         @Header("Authorization") authToken: String,
         @Body request: ImportContactRequest // <--- This is correct
     ): ImportContactResponse
 
-    @GET("/")
+    @GET(".")
     fun getProducts(
         @Header("Authorization") token: String = "Bearer eyJhbGciOi..."
     ): Call<ProductResponse>
 
-    @GET("/products/{productId}")
+    @GET("products/{productId}")
     suspend fun getProductById(
         @Path("productId") productId: Int = 0,
         @Header("Authorization") authToken: String
     ): ProductById
 
-    @POST("/ai")
+    @POST("ai")
     fun getAiRecommendation(
         @Header("Authorization") token: String,
         @Body request: AiRequest
