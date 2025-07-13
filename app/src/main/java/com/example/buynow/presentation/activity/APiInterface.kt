@@ -37,7 +37,7 @@ interface ApiInterface {
         @Header("Authorization") token: String = "Bearer eyJhbGciOi..."
     ): Call<ProductResponse>
 
-    @GET("products/{productId}")
+    @GET("/products/{productId}")
     suspend fun getProductById(
         @Path("productId") productId: Int = 0,
         @Header("Authorization") authToken: String
