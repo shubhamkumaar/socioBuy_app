@@ -6,7 +6,7 @@ SocioBuy is a revolutionary social commerce Android application that combines th
 
 ## 🌟 Complete SocioBuy Ecosystem
 
-- **📱 Android App** (This Repository): Mobile frontend with visual search ML capabilities
+- **📱 Android App** (This Repository): Mobile frontend
 - **🔧 Backend API**: [SocioBuy Backend](https://github.com/shubhamkumaar/socioBuy_backend) - FastAPI + Neo4j + Gemini AI for social commerce recommendations
 
 ## ✨ Key Features
@@ -204,18 +204,6 @@ We welcome contributions! Please follow these steps:
 - **Feature Requests**: Create a detailed issue with the "enhancement" label
 - **Security Issues**: Contact maintainers directly
 
-## 📋 Roadmap
-
-### Upcoming Features
-- [ ] AR Product Visualization
-- [ ] Voice Search Integration
-- [ ] Advanced ML Recommendations
-- [ ] Multi-language Support
-- [ ] Wear OS Companion App
-- [ ] AI Chatbot Assistant
-- [ ] Social Shopping Groups
-- [ ] Live Shopping Events
-
 ## 📄 License
 
 ```
@@ -250,7 +238,7 @@ SOFTWARE.
 - LinkedIn: [Your LinkedIn Profile](https://linkedin.com/in/yourprofile)
 
 ## 🙏 Acknowledgments
-
+- **JahidHasan** [@jahidHasan](https://github.com/JahidHasanCO) for the initial android app.
 - **Google** for Android development tools and ML frameworks
 - **TensorFlow Team** for TensorFlow Lite
 - **Material Design Team** for excellent design guidelines
