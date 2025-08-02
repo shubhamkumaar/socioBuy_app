@@ -9,6 +9,10 @@ SocioBuy is a revolutionary social commerce Android application that combines th
 email: shub@example.com
 password: 12345678
 ```
+
+### Demo Video
+[![Watch the video](./ART/demo_video.mp4)](./ART/demo_video.mp4)
+
 ## 🌟 Complete SocioBuy Ecosystem
 
 - **📱 Android App** (This Repository): Mobile frontend
