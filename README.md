@@ -4,6 +4,11 @@
 
 SocioBuy is a revolutionary social commerce Android application that combines the power of **artificial intelligence**, **machine learning**, and **social networking** to create a personalized shopping experience. The app features cutting-edge **visual search technology** powered by TensorFlow Lite, allowing users to search for products by simply taking or uploading photos.
 
+### use this for the login
+```bash
+email: shub@example.com
+password: 12345678
+```
 ## 🌟 Complete SocioBuy Ecosystem
 
 - **📱 Android App** (This Repository): Mobile frontend

@@ -79,6 +79,7 @@ class ProfileFragment : Fragment() {
 
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var pickContactLauncher: ActivityResultLauncher<Intent>
+    private lateinit var  importContact : CardView
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -99,7 +100,6 @@ class ProfileFragment : Fragment() {
         val shippingAddressCard_ProfilePage = view.findViewById<CardView>(R.id.shippingAddressCard_ProfilePage)
         val paymentMethod_ProfilePage = view.findViewById<CardView>(R.id.paymentMethod_ProfilePage)
         val cardsNumber_profileFrag: TextView = view.findViewById(R.id.cardsNumber_profileFrag)
-        val importContact = view.findViewById<CardView>(R.id.import_contact)
 
         cardViewModel = ViewModelProviders.of(this).get(CardViewModel::class.java)
 
@@ -128,23 +128,7 @@ class ProfileFragment : Fragment() {
 
         uploadImage_profileFrag.visibility = View.GONE
 
-        requestPermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-                // Permission granted, launch contact picker
-                Log.d(TAG, "READ_CONTACTS permission granted. Launching contact picker.")
-                launchContactPicker()
-            } else {
-                // Permission denied, inform the user
-                Log.w(TAG, "READ_CONTACTS permission denied.")
-                Toast.makeText(context, "Permission denied to read contacts.", Toast.LENGTH_SHORT).show()
-            }
-        }
-        importContact.setOnClickListener {
-            Log.d(TAG, "Import Contact button clicked.")
-            checkContactPermissionAndReadAllContacts() // Using Log.d for debug messages
-        }
+
 
         getUserData()
 
@@ -174,9 +158,33 @@ class ProfileFragment : Fragment() {
             )
             popupMenu.show()
         }
-
         return view
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Initialize View
+        importContact = view.findViewById(R.id.import_contact)
+
+        // Register the permission request launcher
+        requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                Log.d(TAG, "READ_CONTACTS permission granted. Proceeding to read contacts.")
+                readAllContacts()
+            } else {
+                Log.w(TAG, "READ_CONTACTS permission denied.")
+                Toast.makeText(requireContext(), "Permission denied to read contacts.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Set Click Listener on importContact CardView
+        importContact.setOnClickListener {
+            Log.d(TAG, "Import Contact button clicked.")
+            checkContactPermissionAndReadAllContacts()
+        }
+    }
+
     private fun checkContactPermissionAndReadAllContacts() {
         when {
             ContextCompat.checkSelfPermission(
@@ -205,80 +213,77 @@ class ProfileFragment : Fragment() {
         }
     }
     private fun readAllContacts() {
-        Toast.makeText(requireContext(), "Reading Contacts", Toast.LENGTH_SHORT).show()
-        val contactsList = mutableListOf<Pair<String, String>>() // To store name and number
-        var lastContactName: String? = null
-        var lastContactNumber: String? = null
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(requireContext(), "Reading Contacts", Toast.LENGTH_SHORT).show()
+            }
 
-        val projection = arrayOf(
-            ContactsContract.Contacts._ID,
-            ContactsContract.Contacts.DISPLAY_NAME,
-            ContactsContract.Contacts.HAS_PHONE_NUMBER
-        )
+            val contactsList = mutableListOf<Pair<String, String>>()
 
-        val cursor = requireContext().contentResolver.query(
-            ContactsContract.Contacts.CONTENT_URI,
-            projection,
-            null,
-            null,
-            null
-        )
+            val projection = arrayOf(
+                ContactsContract.Contacts._ID,
+                ContactsContract.Contacts.DISPLAY_NAME,
+                ContactsContract.Contacts.HAS_PHONE_NUMBER
+            )
 
-        cursor?.use {
-            val idColumn = it.getColumnIndex(ContactsContract.Contacts._ID)
-            val nameColumn = it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
-            val hasPhoneNumberColumn = it.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)
+            val cursor = requireContext().contentResolver.query(
+                ContactsContract.Contacts.CONTENT_URI,
+                projection,
+                null,
+                null,
+                null
+            )
 
-            while (it.moveToNext()) {
-                val contactId = if (idColumn != -1) it.getString(idColumn) else null
-                val contactName = if (nameColumn != -1) it.getString(nameColumn) else null
-                val hasPhoneNumber = if (hasPhoneNumberColumn != -1) it.getInt(hasPhoneNumberColumn) else 0
+            cursor?.use {
+                val idColumn = it.getColumnIndex(ContactsContract.Contacts._ID)
+                val nameColumn = it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
+                val hasPhoneNumberColumn = it.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)
 
-                // Only proceed if contact has a phone number
-                if (contactId != null && contactName != null && hasPhoneNumber > 0) {
-                    var phoneNumber: String? = null
-                    val phoneCursor = requireContext().contentResolver.query(
-                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                        arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                        arrayOf(contactId),
-                        null
-                    )
-                    phoneCursor?.use { phoneIt ->
-                        val numberColumn = phoneIt.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-                        if (phoneIt.moveToFirst()) { // Get the first phone number
-                            phoneNumber = if (numberColumn != -1) phoneIt.getString(numberColumn) else null
+                while (it.moveToNext()) {
+                    val contactId = if (idColumn != -1) it.getString(idColumn) else null
+                    val contactName = if (nameColumn != -1) it.getString(nameColumn) else null
+                    val hasPhoneNumber = if (hasPhoneNumberColumn != -1) it.getInt(hasPhoneNumberColumn) else 0
+
+                    if (!contactId.isNullOrBlank() && !contactName.isNullOrBlank() && hasPhoneNumber > 0) {
+                        val phoneCursor = requireContext().contentResolver.query(
+                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                            arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
+                            "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
+                            arrayOf(contactId),
+                            null
+                        )
+
+                        phoneCursor?.use { phoneIt ->
+                            val numberColumn = phoneIt.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                            if (phoneIt.moveToFirst() && numberColumn != -1) {
+                                val phoneNumber = phoneIt.getString(numberColumn)
+                                if (!phoneNumber.isNullOrBlank()) {
+                                    contactsList.add(Pair(contactName, phoneNumber))
+                                }
+                            }
                         }
                     }
-                    phoneCursor?.close()
-
-                    if (phoneNumber != null) {
-                        contactsList.add(Pair(contactName, phoneNumber?.toString()) as Pair<String, String>)
-                        lastContactName = contactName
-                        lastContactNumber = phoneNumber
-                    }
                 }
-            }
-        }
-        cursor?.close()
-        if (contactsList.size > 0) {
-            val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            val token: String? = sharedPref.getString("auth_token", "N/A")
-            if (token == "N/A" || token == null) {
-                Toast.makeText(requireContext(), "Error Uploading Contacts", Toast.LENGTH_SHORT).show()
-                return
+
             }
 
-            CoroutineScope(Dispatchers.IO).launch {
+            if (contactsList.isNotEmpty()) {
+                val sharedPref = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                val token: String? = sharedPref.getString("auth_token", "N/A")
+                if (token == "N/A" || token == null) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "Error Uploading Contacts", Toast.LENGTH_SHORT).show()
+                    }
+                    return@launch
+                }
+
                 try {
                     val contactObjects = contactsList.map { pair ->
                         Contact(name = pair.first, number = pair.second)
                     }
 
                     val importRequest = ImportContactRequest(contacts = contactObjects)
-
                     val authHeader = "Bearer $token"
-                    // Make the API call
                     val response: ImportContactResponse = RetrofitInstance.apiInterface.importContact(
                         authToken = authHeader,
                         request = importRequest
@@ -303,16 +308,13 @@ class ProfileFragment : Fragment() {
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            requireContext(),
-                            "An unexpected error occurred: ${e.localizedMessage}",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        Toast.makeText(requireContext(), "Unexpected error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                     }
                 }
             }
         }
     }
+
     private fun launchContactPicker() {
         val intent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
         pickContactLauncher.launch(intent)
